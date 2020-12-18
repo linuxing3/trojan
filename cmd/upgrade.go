@@ -20,7 +20,7 @@ func upgradeConfig() {
 		return
 	}
 	config := core.Load("")
-	config.SSl.Sni = domain
+	// config.SSl.Sni = domain
 	core.Save(config, "")
 	xray.Restart()
 }

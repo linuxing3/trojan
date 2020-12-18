@@ -186,7 +186,7 @@ func UserList(ids ...string) []*core.User {
 		} else {
 			fmt.Println("到期日期: " + util.Cyan(k.ExpiryDate))
 		}
-		fmt.Println("分享链接: " + util.Green(fmt.Sprintf("trojan://%s@%s:%d", string(pass), domain, port)))
+		fmt.Println("分享链接: " + util.Green(fmt.Sprintf("xray://%s@%s:%d", string(pass), domain, port)))
 		fmt.Println()
 	}
 	return userList

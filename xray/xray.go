@@ -93,7 +93,7 @@ func Version() string {
 	return tempSlice[len(tempSlice)-1]
 }
 
-// Type Trojan类型
+// Type Xray类型
 func Type() string {
 	tType, _ := core.GetValue("xrayType")
 	if tType == "" {
@@ -107,7 +107,7 @@ func Type() string {
 	return tType
 }
 
-// Log 实时打印trojan日志
+// Log 实时打印日志
 func Log(line int) {
 	result, _ := LogChan("-n "+strconv.Itoa(line), make(chan byte))
 	for line := range result {
@@ -115,9 +115,9 @@ func Log(line int) {
 	}
 }
 
-// LogChan trojan实时日志, 返回chan
+// LogChan 实时日志, 返回chan
 func LogChan(param string, closeChan chan byte) (chan string, error) {
-	cmd := exec.Command("bash", "-c", "journalctl -f -u trojan "+param)
+	cmd := exec.Command("bash", "-c", "journalctl -f -u xray "+param)
 
 	stdout, _ := cmd.StdoutPipe()
 
@@ -158,5 +158,5 @@ func SetDomain(domain string) {
 // GetDomainAndPort 获取域名和端口
 func GetDomainAndPort() (string, int) {
 	config := core.Load("")
-	return config.SSl.Sni, config.LocalPort
+	return config.Inbounds[0].Prototocol, config.Inbounds[0].Port
 }

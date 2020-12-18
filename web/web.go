@@ -79,10 +79,10 @@ func xrayRouter(router *gin.Engine) {
 	router.POST("/xray/update", func(c *gin.Context) {
 		c.JSON(200, controller.Update())
 	})
-	router.POST("/xray/switch", func(c *gin.Context) {
-		tType := c.DefaultPostForm("type", "xray")
-		c.JSON(200, controller.SetTrojanType(tType))
-	})
+	// router.POST("/xray/switch", func(c *gin.Context) {
+	// 	tType := c.DefaultPostForm("type", "xray")
+	// 	c.JSON(200, controller.SetTrojanType(tType))
+	// })
 	router.POST("/xray/loglevel", func(c *gin.Context) {
 		slevel := c.DefaultPostForm("level", "1")
 		level, _ := strconv.Atoi(slevel)
