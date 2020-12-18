@@ -1,8 +1,9 @@
 package cmd
 
 import (
+	"trojan/xray"
+
 	"github.com/spf13/cobra"
-	"trojan/trojan"
 )
 
 // cleanCmd represents the clean command
@@ -14,7 +15,7 @@ trojan clean zhangsan lisi
 `,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		trojan.CleanDataByName(args)
+		xray.CleanDataByName(args)
 	},
 }
 

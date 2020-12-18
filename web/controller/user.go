@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 	"trojan/core"
-	"trojan/trojan"
+	"trojan/xray"
 )
 
 // UserList 获取用户列表
@@ -26,7 +26,7 @@ func UserList(findUser string) *ResponseBody {
 		responseBody.Msg = err.Error()
 		return &responseBody
 	}
-	domain, port := trojan.GetDomainAndPort()
+	domain, port := xray.GetDomainAndPort()
 	responseBody.Data = map[string]interface{}{
 		"domain":   domain,
 		"port":     port,
@@ -45,7 +45,7 @@ func PageUserList(curPage int, pageSize int) *ResponseBody {
 		responseBody.Msg = err.Error()
 		return &responseBody
 	}
-	domain, port := trojan.GetDomainAndPort()
+	domain, port := xray.GetDomainAndPort()
 	responseBody.Data = map[string]interface{}{
 		"domain":   domain,
 		"port":     port,

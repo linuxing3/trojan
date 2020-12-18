@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"trojan/trojan"
+	"trojan/xray"
 
 	"github.com/spf13/cobra"
 )
@@ -9,9 +9,9 @@ import (
 // statusCmd represents the status command
 var statusCmd = &cobra.Command{
 	Use:   "status",
-	Short: "查看trojan状态",
+	Short: "查看xray状态",
 	Run: func(cmd *cobra.Command, args []string) {
-		trojan.Status(true)
+		xray.Status(true)
 	},
 }
 

@@ -1,0 +1,15 @@
+[Unit]
+Description=trojan-web
+Documentation=https://github.com/linuxing3/trojan
+After=network.target network-online.target nss-lookup.target mysql.service mariadb.service mysqld.service docker.service
+
+[Service]
+Type=simple
+StandardError=journal
+ExecStart=/usr/local/bin/xray web
+ExecReload=/bin/kill -HUP \$MAINPID
+Restart=on-failure
+RestartSec=3s
+
+[Install]
+WantedBy=multi-user.target

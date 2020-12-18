@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GITHUB_TOKEN=""
+GITHUB_TOKEN="75a74f635c15b6cf5b43e89dbf178dfdaebaf26c"
 
 PROJECT="linuxing3/trojan"
 
@@ -15,7 +15,7 @@ function uploadfile() {
 
   curl -H "Authorization: token ${GITHUB_TOKEN}" -H "Content-Type: ${CTYPE}" --data-binary @$FILE "https://uploads.github.com/repos/$PROJECT/releases/${RELEASE_ID}/assets?name=$(basename $FILE)"
 
-  echo ""
+  echo "[uploaded]:  $FILE"
 }
 
 function upload() {

@@ -2,11 +2,12 @@ package controller
 
 import (
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"strconv"
 	"time"
 	"trojan/core"
-	"trojan/trojan"
+	"trojan/xray"
+
+	"github.com/robfig/cron/v3"
 )
 
 var c *cron.Cron
@@ -82,7 +83,7 @@ func SheduleTask() {
 		if needRestart, err := mysql.DailyCheckExpire(); err != nil {
 			fmt.Println("DailyCheckError: " + err.Error())
 		} else if needRestart {
-			trojan.Restart()
+			xray.Restart()
 		}
 	})
 

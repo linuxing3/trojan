@@ -2,11 +2,13 @@ package web
 
 import (
 	"fmt"
-	"github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-gonic/gin"
 	"time"
 	"trojan/core"
 	"trojan/web/controller"
+
+	"github.com/appleboy/gin-jwt/v2"
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -127,7 +129,7 @@ func Auth(r *gin.Engine) *jwt.GinJWTMiddleware {
 		} else {
 			title, err := core.GetValue("login_title")
 			if err != nil {
-				title = "trojan 管理平台"
+				title = "xray 管理平台"
 			}
 			c.JSON(200, gin.H{
 				"code":    200,

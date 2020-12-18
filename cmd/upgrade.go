@@ -2,15 +2,16 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"trojan/core"
-	"trojan/trojan"
+	"trojan/xray"
+
+	"github.com/spf13/cobra"
 )
 
 // upgradeCmd represents the update command
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "升级数据库和trojan配置文件",
+	Short: "升级数据库和xray配置文件",
 }
 
 func upgradeConfig() {
@@ -19,9 +20,9 @@ func upgradeConfig() {
 		return
 	}
 	config := core.Load("")
-	config.SSl.Sni = domain
+	// config.SSl.Sni = domain
 	core.Save(config, "")
-	trojan.Restart()
+	xray.Restart()
 }
 
 func init() {

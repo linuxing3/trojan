@@ -2,18 +2,19 @@ package web
 
 import (
 	"fmt"
-	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
-	"github.com/gobuffalo/packr/v2"
 	"net/http"
 	"strconv"
 	"trojan/core"
 	"trojan/util"
 	"trojan/web/controller"
+
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-gonic/gin"
+	"github.com/gobuffalo/packr/v2"
 )
 
 func userRouter(router *gin.Engine) {
-	user := router.Group("/trojan/user")
+	user := router.Group("/xray/user")
 	{
 		user.GET("", func(c *gin.Context) {
 			requestUser := RequestUsername(c)
@@ -62,41 +63,41 @@ func userRouter(router *gin.Engine) {
 	}
 }
 
-func trojanRouter(router *gin.Engine) {
-	router.POST("/trojan/start", func(c *gin.Context) {
+func xrayRouter(router *gin.Engine) {
+	router.POST("/xray/start", func(c *gin.Context) {
 		c.JSON(200, controller.Start())
 	})
-	router.POST("/trojan/stop", func(c *gin.Context) {
+	router.POST("/xray/stop", func(c *gin.Context) {
 		c.JSON(200, controller.Stop())
 	})
-	router.POST("/trojan/restart", func(c *gin.Context) {
+	router.POST("/xray/restart", func(c *gin.Context) {
 		c.JSON(200, controller.Restart())
 	})
-	router.GET("/trojan/loglevel", func(c *gin.Context) {
+	router.GET("/xray/loglevel", func(c *gin.Context) {
 		c.JSON(200, controller.GetLogLevel())
 	})
-	router.POST("/trojan/update", func(c *gin.Context) {
+	router.POST("/xray/update", func(c *gin.Context) {
 		c.JSON(200, controller.Update())
 	})
-	router.POST("/trojan/switch", func(c *gin.Context) {
-		tType := c.DefaultPostForm("type", "trojan")
-		c.JSON(200, controller.SetTrojanType(tType))
-	})
-	router.POST("/trojan/loglevel", func(c *gin.Context) {
+	// router.POST("/xray/switch", func(c *gin.Context) {
+	// 	tType := c.DefaultPostForm("type", "xray")
+	// 	c.JSON(200, controller.SetTrojanType(tType))
+	// })
+	router.POST("/xray/loglevel", func(c *gin.Context) {
 		slevel := c.DefaultPostForm("level", "1")
-		level, _ := strconv.Atoi(slevel)
-		c.JSON(200, controller.SetLogLevel(level))
+		// level, _ := strconv.Atoi(slevel)
+		c.JSON(200, controller.SetLogLevel(slevel))
 	})
-	router.POST("/trojan/domain", func(c *gin.Context) {
+	router.POST("/xray/domain", func(c *gin.Context) {
 		c.JSON(200, controller.SetDomain(c.PostForm("domain")))
 	})
-	router.GET("/trojan/log", func(c *gin.Context) {
+	router.GET("/xray/log", func(c *gin.Context) {
 		controller.Log(c)
 	})
 }
 
 func dataRouter(router *gin.Engine) {
-	data := router.Group("/trojan/data")
+	data := router.Group("/xray/data")
 	{
 		data.POST("", func(c *gin.Context) {
 			sID := c.PostForm("id")
@@ -153,7 +154,7 @@ func Start(host string, port int, isSSL bool) {
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
 	staticRouter(router)
 	router.Use(Auth(router).MiddlewareFunc())
-	trojanRouter(router)
+	xrayRouter(router)
 	userRouter(router)
 	dataRouter(router)
 	commonRouter(router)

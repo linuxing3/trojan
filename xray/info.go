@@ -1,4 +1,4 @@
-package trojan
+package xray
 
 var (
 	// MVersion 程序版本号

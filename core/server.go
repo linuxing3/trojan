@@ -4,16 +4,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/google/uuid"
 )
 
-var configPath = "/usr/local/etc/trojan/config.json"
+var configPath = "/usr/local/etc/xray/config.json"
 
 // ServerConfig 结构体
 type ServerConfig struct {
 	Config
 	SSl   ServerSSL `json:"ssl"`
 	Tcp   ServerTCP `json:"tcp"`
-	Mysql Mysql     `json:"mysql"`
+	Mysql Mysql     `json: "mysql"`
+}
+
+// TrojanServerConfig 结构体
+type TrojanServerConfig struct {
+	TrojanConfig
+	SSl   ServerSSL `json:"ssl"`
+	Tcp   ServerTCP `json:"tcp"`
+	Mysql Mysql     `json: "mysql"`
 }
 
 // ServerSSL 结构体
@@ -85,9 +95,14 @@ func WriteMysql(mysql *Mysql) bool {
 // WriteTls 写tls配置
 func WriteTls(cert, key, domain string) bool {
 	config := Load("")
+	// 第一层
 	config.SSl.Cert = cert
 	config.SSl.Key = key
 	config.SSl.Sni = domain
+	// 入站层的设置
+	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].CertificateFile = cert
+	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].KeyFile = key
+	config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
 
@@ -95,19 +110,24 @@ func WriteTls(cert, key, domain string) bool {
 func WriteDomain(domain string) bool {
 	config := Load("")
 	config.SSl.Sni = domain
+	config.Config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
 
 // WritePassword 写密码
 func WritePassword(pass []string) bool {
+	var u1 string = fmt.Sprintf("%s", uuid.New())
 	config := Load("")
-	config.Password = pass
+	if pass == nil {
+		pass = []string{u1}
+	}
+	config.Inbounds[0].Settings[0].Clients[0].Id = pass[0]
 	return Save(config, "")
 }
 
 // WriteLogLevel 写日志等级
-func WriteLogLevel(level int) bool {
+func WriteLogLevel(level string) bool {
 	config := Load("")
-	config.LogLevel = level
+	config.Log.LogLevel = level
 	return Save(config, "")
 }
