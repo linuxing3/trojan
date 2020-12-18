@@ -32,7 +32,7 @@ CHECKVERSION="https://api.github.com/repos/project-v/xray/releases/latest"
 NAME=xray
 SHORTDOWNLOADURL="https://dongxishijie.xyz/xray"
 
-INSTALLPREFIX="/usr/local/bin"
+INSTALLPREFIX="/usr/bin/$NAME"
 SYSTEMDPREFIX=/etc/systemd/system
 
 BINARYPATH="$INSTALLPREFIX/$NAME"

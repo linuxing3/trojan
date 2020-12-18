@@ -45,7 +45,7 @@ func Update() *ResponseBody {
 }
 
 // SetLogLevel 修改xray日志等级
-func SetLogLevel(level int) *ResponseBody {
+func SetLogLevel(level string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	core.WriteLogLevel(level)
@@ -59,7 +59,7 @@ func GetLogLevel() *ResponseBody {
 	defer TimeCost(time.Now(), &responseBody)
 	config := core.Load("")
 	responseBody.Data = map[string]interface{}{
-		"loglevel": config.LogLevel,
+		"loglevel": config.Log.LogLevel,
 	}
 	return &responseBody
 }

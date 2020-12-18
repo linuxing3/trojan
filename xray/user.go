@@ -38,17 +38,21 @@ func AddUser() {
 		fmt.Println(util.Yellow("不能新建用户名为'admin'的用户!"))
 		return
 	}
+	// 获取数据库配置
 	mysql := core.GetMysql()
 	if user := mysql.GetUserByName(inputUser); user != nil {
 		fmt.Println(util.Yellow("已存在用户名为: " + inputUser + " 的用户!"))
 		return
 	}
+	// 生成随机密码
 	inputPass := util.Input(fmt.Sprintf("生成随机密码: %s, 使用直接回车, 否则输入自定义密码: ", randomPass), randomPass)
 	base64Pass := base64.StdEncoding.EncodeToString([]byte(inputPass))
+	// 通过密码获取用户
 	if user := mysql.GetUserByPass(base64Pass); user != nil {
 		fmt.Println(util.Yellow("已存在密码为: " + inputPass + " 的用户!"))
 		return
 	}
+	// 创建新用户
 	if mysql.CreateUser(inputUser, base64Pass, inputPass) == nil {
 		fmt.Println("新增用户成功!")
 	}

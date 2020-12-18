@@ -85,8 +85,8 @@ func xrayRouter(router *gin.Engine) {
 	// })
 	router.POST("/xray/loglevel", func(c *gin.Context) {
 		slevel := c.DefaultPostForm("level", "1")
-		level, _ := strconv.Atoi(slevel)
-		c.JSON(200, controller.SetLogLevel(level))
+		// level, _ := strconv.Atoi(slevel)
+		c.JSON(200, controller.SetLogLevel(slevel))
 	})
 	router.POST("/xray/domain", func(c *gin.Context) {
 		c.JSON(200, controller.SetDomain(c.PostForm("domain")))
