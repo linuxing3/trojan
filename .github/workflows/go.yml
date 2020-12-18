@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ xray ]
   pull_request:
-    branches: [ master ]
+    branches: [ xray ]
 
 jobs:
 
@@ -20,6 +20,8 @@ jobs:
 
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
+      with:
+        ref: xray
 
     - name: Get dependencies
       run: |
@@ -34,3 +36,13 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+    
+    - name: Upload a Release Asset
+      uses: actions/upload-release-asset@v1.0.2
+      with:
+        # The URL for uploading assets to the release
+        upload_url: xray.zip
+        # The path to the asset you want to upload
+        asset_path: result/xray
+        # The name of the asset you want to upload
+        asset_name: xray
