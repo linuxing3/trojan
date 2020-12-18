@@ -33,7 +33,8 @@ func check() {
 		xray.InstallXray()
 		core.WritePassword(nil)
 		xray.InstallTls()
-		xray.InstallMysql()
+		// xray.InstallMysql()
+		xray.InstallMysqlHelper("xray")
 		util.ExecCommand("systemctl restart xray-web")
 	}
 }

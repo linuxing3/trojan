@@ -187,6 +187,7 @@ main(){
     [[ $UPDATE == 0 ]] && echo "正在安装xray管理程序.." || echo "正在更新xray管理程序.."
     checkSys
     [[ $UPDATE == 0 ]] && installDependent
+    echo "安装xray的加强管理程序"
     installXray
 }
 

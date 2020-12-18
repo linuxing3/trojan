@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/google/uuid"
 )
 
 var configPath = "/usr/local/etc/xray/config.json"
@@ -57,41 +59,6 @@ func Load(path string) *ServerConfig {
 		return nil
 	}
 	return &config
-}
-
-// LoadTrojanConfig 加载服务端配置文件
-func LoadTrojanConfig(path string) *TrojanServerConfig {
-	if path == "" {
-		path = configPath
-	}
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	config := TrojanServerConfig{}
-	if err := json.Unmarshal(data, &config); err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	return &config
-}
-
-// SaveTrojanConfig 保存服务端配置文件
-func SaveTrojanConfig(config *TrojanServerConfig, path string) bool {
-	if path == "" {
-		path = configPath
-	}
-	data, err := json.MarshalIndent(config, "", "    ")
-	if err != nil {
-		fmt.Println(err)
-		return false
-	}
-	if err = ioutil.WriteFile(path, data, 0644); err != nil {
-		fmt.Println(err)
-		return false
-	}
-	return true
 }
 
 // Save 保存服务端配置文件
@@ -149,7 +116,11 @@ func WriteDomain(domain string) bool {
 
 // WritePassword 写密码
 func WritePassword(pass []string) bool {
+	var u1 string = fmt.Sprintf("%s", uuid.New())
 	config := Load("")
+	if pass == nil {
+		pass = []string{u1}
+	}
 	config.Inbounds[0].Settings[0].Clients[0].Id = pass[0]
 	return Save(config, "")
 }
