@@ -1,16 +1,17 @@
 package cmd
 
 import (
+	"trojan/xray"
+
 	"github.com/spf13/cobra"
-	"trojan/trojan"
 )
 
 // stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
-	Short: "停止trojan",
+	Short: "停止xray",
 	Run: func(cmd *cobra.Command, args []string) {
-		trojan.Stop()
+		xray.Stop()
 	},
 }
 

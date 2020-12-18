@@ -1,16 +1,17 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"trojan/util"
+
+	"github.com/spf13/cobra"
 )
 
 // updateWebCmd represents the update command
 var updateWebCmd = &cobra.Command{
 	Use:   "updateWeb",
-	Short: "更新trojan管理程序",
+	Short: "更新xray管理程序",
 	Run: func(cmd *cobra.Command, args []string) {
-		util.RunWebShell("https://git.io/trojan-install")
+		util.RunWebShell("https://git.io/xray-install")
 	},
 }
 

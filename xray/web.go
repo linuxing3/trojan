@@ -1,4 +1,4 @@
-package trojan
+package xray
 
 import (
 	"crypto/sha256"

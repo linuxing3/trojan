@@ -1,15 +1,16 @@
 package controller
 
 import (
+	"time"
+	"trojan/core"
+	"trojan/xray"
+
 	"github.com/robfig/cron/v3"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
-	"time"
-	"trojan/core"
-	"trojan/trojan"
 )
 
 // ResponseBody 结构体
@@ -36,13 +37,13 @@ func Version() *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	responseBody.Data = map[string]string{
-		"version":       trojan.MVersion,
-		"buildDate":     trojan.BuildDate,
-		"goVersion":     trojan.GoVersion,
-		"gitVersion":    trojan.GitVersion,
-		"trojanVersion": trojan.Version(),
-		"trojanRuntime": trojan.RunTime(),
-		"trojanType":    trojan.Type(),
+		"version":     xray.MVersion,
+		"buildDate":   xray.BuildDate,
+		"goVersion":   xray.GoVersion,
+		"gitVersion":  xray.GitVersion,
+		"xrayVersion": xray.Version(),
+		"xrayRuntime": xray.RunTime(),
+		"xrayType":    xray.Type(),
 	}
 	return &responseBody
 }
@@ -62,7 +63,7 @@ func SetLoginInfo(title string) *ResponseBody {
 func SetDomain(domain string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
-	trojan.SetDomain(domain)
+	xray.SetDomain(domain)
 	return &responseBody
 }
 
@@ -74,7 +75,7 @@ func SetTrojanType(tType string) *ResponseBody {
 	if err != nil {
 		responseBody.Msg = err.Error()
 	}
-	trojan.InstallTrojan()
+	xray.InstallXray()
 	return &responseBody
 }
 

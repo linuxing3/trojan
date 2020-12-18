@@ -1,4 +1,4 @@
-package trojan
+package xray
 
 import (
 	"bufio"
@@ -15,14 +15,8 @@ import (
 // ControllMenu Trojan控制菜单
 func ControllMenu() {
 	fmt.Println()
-	tType := Type()
-	if tType == "trojan" {
-		tType = "trojan-go"
-	} else {
-		tType = "trojan"
-	}
-	menu := []string{"启动trojan", "停止trojan", "重启trojan", "查看trojan状态", "查看trojan日志"}
-	menu = append(menu, "切换为"+tType)
+
+	menu := []string{"启动xray", "停止xray", "重启xray", "查看xray状态", "查看xray日志"}
 	switch util.LoopInput("请选择: ", menu, true) {
 	case 1:
 		Start()
@@ -38,51 +32,48 @@ func ControllMenu() {
 		signal.Notify(c, os.Interrupt, os.Kill)
 		//阻塞
 		<-c
-	case 6:
-		_ = core.SetValue("trojanType", tType)
-		InstallTrojan()
 	}
 }
 
-// Restart 重启trojan
+// Restart 重启xray
 func Restart() {
-	if err := util.ExecCommand("systemctl restart trojan"); err != nil {
-		fmt.Println(util.Red("重启trojan失败!"))
+	if err := util.ExecCommand("systemctl restart xray"); err != nil {
+		fmt.Println(util.Red("重启xray失败!"))
 	} else {
-		fmt.Println(util.Green("重启trojan成功!"))
+		fmt.Println(util.Green("重启xray成功!"))
 	}
 }
 
-// Start 启动trojan
+// Start 启动xray
 func Start() {
-	if err := util.ExecCommand("systemctl start trojan"); err != nil {
-		fmt.Println(util.Red("启动trojan失败!"))
+	if err := util.ExecCommand("systemctl start xray"); err != nil {
+		fmt.Println(util.Red("启动xray失败!"))
 	} else {
-		fmt.Println(util.Green("启动trojan成功!"))
+		fmt.Println(util.Green("启动xray成功!"))
 	}
 }
 
-// Stop 停止trojan
+// Stop 停止xray
 func Stop() {
-	if err := util.ExecCommand("systemctl stop trojan"); err != nil {
-		fmt.Println(util.Red("停止trojan失败!"))
+	if err := util.ExecCommand("systemctl stop xray"); err != nil {
+		fmt.Println(util.Red("停止xray失败!"))
 	} else {
-		fmt.Println(util.Green("停止trojan成功!"))
+		fmt.Println(util.Green("停止xray成功!"))
 	}
 }
 
-// Status 获取trojan状态
+// Status 获取xray状态
 func Status(isPrint bool) string {
-	result := util.ExecCommandWithResult("systemctl status trojan")
+	result := util.ExecCommandWithResult("systemctl status xray")
 	if isPrint {
 		fmt.Println(result)
 	}
 	return result
 }
 
-// RunTime Trojan运行时间
+// RunTime xray运行时间
 func RunTime() string {
-	result := strings.TrimSpace(util.ExecCommandWithResult("ps -Ao etime,args|grep -v grep|grep /usr/local/etc/trojan/config.json"))
+	result := strings.TrimSpace(util.ExecCommandWithResult("ps -Ao etime,args|grep -v grep|grep /usr/local/etc/xray/config.json"))
 	resultSlice := strings.Split(result, " ")
 	if len(resultSlice) > 0 {
 		return resultSlice[0]
@@ -90,13 +81,10 @@ func RunTime() string {
 	return ""
 }
 
-// Version Trojan版本
+// Version xray版本
 func Version() string {
 	flag := "-v"
-	if Type() == "trojan-go" {
-		flag = "-version"
-	}
-	result := strings.TrimSpace(util.ExecCommandWithResult("/usr/bin/trojan/trojan " + flag))
+	result := strings.TrimSpace(util.ExecCommandWithResult("/usr/bin/xray/xray " + flag))
 	if len(result) == 0 {
 		return ""
 	}
@@ -107,14 +95,14 @@ func Version() string {
 
 // Type Trojan类型
 func Type() string {
-	tType, _ := core.GetValue("trojanType")
+	tType, _ := core.GetValue("xrayType")
 	if tType == "" {
 		if strings.Contains(Status(false), "trojan-go") {
-			tType = "trojan-go"
+			tType = "xray"
 		} else {
-			tType = "trojan"
+			tType = "xray"
 		}
-		_ = core.SetValue("trojanType", tType)
+		_ = core.SetValue("xrayType", tType)
 	}
 	return tType
 }

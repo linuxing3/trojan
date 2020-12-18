@@ -1,4 +1,4 @@
-package trojan
+package xray
 
 import (
 	"fmt"
@@ -20,10 +20,10 @@ var (
 // InstallMenu 安装目录
 func InstallMenu() {
 	fmt.Println()
-	menu := []string{"更新trojan", "证书申请", "安装mysql"}
+	menu := []string{"更新xray", "证书申请", "安装mysql"}
 	switch util.LoopInput("请选择: ", menu, true) {
 	case 1:
-		InstallTrojan()
+		InstallXray()
 	case 2:
 		InstallTls()
 	case 3:
@@ -47,21 +47,21 @@ func InstallDocker() {
 	}
 }
 
-// InstallTrojan 安装trojan
-func InstallTrojan() {
+// InstallXray 安装trojan
+func InstallXray() {
 	fmt.Println()
-	box := packr.New("trojan-install", "../asset")
-	data, err := box.FindString("trojan-install.sh")
+	box := packr.New("xray-install", "../asset")
+	data, err := box.FindString("xray-install.sh")
 	if err != nil {
 		fmt.Println(err)
 	}
-	if util.ExecCommandWithResult("systemctl list-unit-files|grep trojan.service") != "" && Type() == "trojan-go" {
-		data = strings.ReplaceAll(data, "TYPE=0", "TYPE=1")
-	}
+	// if util.ExecCommandWithResult("systemctl list-unit-files|grep xray.service") != "" && Type() == "xray-go" {
+	// 	data = strings.ReplaceAll(data, "TYPE=0", "TYPE=1")
+	// }
 	util.ExecCommand(data)
 	util.OpenPort(443)
-	util.ExecCommand("systemctl restart trojan")
-	util.ExecCommand("systemctl enable trojan")
+	util.ExecCommand("systemctl restart xray")
+	util.ExecCommand("systemctl enable xray")
 }
 
 // InstallTls 安装证书

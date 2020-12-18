@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"trojan/trojan"
+	"trojan/xray"
 
 	"github.com/spf13/cobra"
 )
@@ -11,7 +11,7 @@ var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "用户信息列表",
 	Run: func(cmd *cobra.Command, args []string) {
-		trojan.UserList()
+		xray.UserList()
 	},
 }
 

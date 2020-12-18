@@ -2,57 +2,58 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	ws "github.com/gorilla/websocket"
 	"log"
 	"time"
 	"trojan/core"
-	"trojan/trojan"
 	websocket "trojan/util"
+	"trojan/xray"
+
+	"github.com/gin-gonic/gin"
+	ws "github.com/gorilla/websocket"
 )
 
-// Start 启动trojan
+// Start 启动xray
 func Start() *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
-	trojan.Start()
+	xray.Start()
 	return &responseBody
 }
 
-// Stop 停止trojan
+// Stop 停止xray
 func Stop() *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
-	trojan.Stop()
+	xray.Stop()
 	return &responseBody
 }
 
-// Restart 重启trojan
+// Restart 重启xray
 func Restart() *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
-	trojan.Restart()
+	xray.Restart()
 	return &responseBody
 }
 
-// Update trojan更新
+// Update xray更新
 func Update() *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
-	trojan.InstallTrojan()
+	xray.InstallXray()
 	return &responseBody
 }
 
-// SetLogLevel 修改trojan日志等级
+// SetLogLevel 修改xray日志等级
 func SetLogLevel(level int) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	core.WriteLogLevel(level)
-	trojan.Restart()
+	xray.Restart()
 	return &responseBody
 }
 
-// GetLogLevel 获取trojan日志等级
+// GetLogLevel 获取xray日志等级
 func GetLogLevel() *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
@@ -80,7 +81,7 @@ func Log(c *gin.Context) {
 	} else {
 		param = "-n " + param
 	}
-	result, err := trojan.LogChan(param, wsConn.CloseChan)
+	result, err := xray.LogChan(param, wsConn.CloseChan)
 	if err != nil {
 		fmt.Println(err)
 		wsConn.WsClose()
