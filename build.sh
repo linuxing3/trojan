@@ -2,7 +2,7 @@
 
 GITHUB_TOKEN=""
 
-PROJECT="Jrohy/trojan"
+PROJECT="linuxing3/trojan"
 
 #获取当前的这个脚本所在绝对路径
 SHELL_PATH=$(cd `dirname $0`; pwd)
