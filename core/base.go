@@ -1,12 +1,14 @@
 package core
 
-// Config seting
+// Config seting// Config seting
 type Config struct {
-	Log struct {
-		LogLevel string `json: "loglevel"`
-	} `json:"log"`
-	Inbounds  []InBoundConfig `json:"inbounds"`
-	Outbounds OutBoundConfig  `json:"outbounds"`
+	Log       LogLevel         `json:"log"`
+	Inbounds  []InBoundConfig  `json:"inbounds"`
+	Outbounds []OutBoundConfig `json:"outbounds"`
+}
+
+type LogLevel struct {
+	LogLevel string `json: "loglevel"`
 }
 
 // InBoundConfig seting
@@ -20,7 +22,7 @@ type InBoundConfig struct {
 
 // OutBoundConfig seting
 type OutBoundConfig struct {
-	Prototocol string `json:"protocol"`
+	Protocol string `json:"protocol"`
 }
 
 // InBoundSettingConfig setting
@@ -58,7 +60,7 @@ type InBoundStreamSettingConfig struct {
 
 // XtlsSettingConfig seting
 type XtlsSettingConfig struct {
-	Alpn         string              `json:"alpn"`
+	Alpn         []string            `json:"alpn"`
 	Certificates []CertificateConfig `json:"security"`
 }
 
