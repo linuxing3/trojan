@@ -33,9 +33,11 @@ type Mysql struct {
 
 // User 用户表记录结构体
 type User struct {
-	ID         uint
+	ID         string
 	Username   string
 	Password   string
+	Level      string
+	Email      string
 	Quota      int64
 	Download   uint64
 	Upload     uint64
@@ -65,16 +67,18 @@ func (mysql *Mysql) GetDB() *sql.DB {
 	return db
 }
 
-// CreateTable 不存在trojan user表则自动创建
+// CreateTable 不存在Xray user表则自动创建
 func (mysql *Mysql) CreateTable() {
 	db := mysql.GetDB()
 	defer db.Close()
 	if _, err := db.Exec(`
 CREATE TABLE IF NOT EXISTS users (
-    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    id CHAR(56) NOT NULL,
     username VARCHAR(64) NOT NULL,
     password CHAR(56) NOT NULL,
     passwordShow VARCHAR(255) NOT NULL,
+    email CHAR(56) NOT NULL,
+    level CHAR(56) NOT NULL,
     quota BIGINT NOT NULL DEFAULT 0,
     download BIGINT UNSIGNED NOT NULL DEFAULT 0,
     upload BIGINT UNSIGNED NOT NULL DEFAULT 0,
@@ -88,15 +92,18 @@ CREATE TABLE IF NOT EXISTS users (
 	}
 }
 
+// 数据库查询全部的用户列表，用于GetData
 func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 	var (
+		id         string
 		username   string
 		originPass string
+		level      string
+		email      string
 		passShow   string
 		download   uint64
 		upload     uint64
 		quota      int64
-		id         uint
 		useDays    uint
 		expiryDate string
 	)
@@ -114,6 +121,8 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 			ID:         id,
 			Username:   username,
 			Password:   passShow,
+			Level:      level,
+			Email:      email,
 			Download:   download,
 			Upload:     upload,
 			Quota:      quota,
@@ -126,13 +135,13 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 
 func queryUser(db *sql.DB, sql string) (*User, error) {
 	var (
+		id         string
 		username   string
 		originPass string
 		passShow   string
 		download   uint64
 		upload     uint64
 		quota      int64
-		id         uint
 		useDays    uint
 		expiryDate string
 	)
@@ -143,23 +152,27 @@ func queryUser(db *sql.DB, sql string) (*User, error) {
 	return &User{ID: id, Username: username, Password: originPass, Download: download, Upload: upload, Quota: quota, UseDays: useDays, ExpiryDate: expiryDate}, nil
 }
 
-// CreateUser 创建Trojan用户
-func (mysql *Mysql) CreateUser(username string, base64Pass string, originPass string) error {
+// CreateUser 创建Xray用户
+func (mysql *Mysql) CreateUser(id string, username string, base64Pass string, originPass string) error {
 	db := mysql.GetDB()
 	if db == nil {
 		return errors.New("can't connect mysql")
 	}
 	defer db.Close()
 	encryPass := sha256.Sum224([]byte(originPass))
-	if _, err := db.Exec(fmt.Sprintf("INSERT INTO users(username, password, passwordShow, quota) VALUES ('%s', '%x', '%s', -1);", username, encryPass, base64Pass)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("INSERT INTO users(id, username, password, passwordShow, quota) VALUES ('%s', '%s', '%x', '%s', -1);", id, username, encryPass, base64Pass)); err != nil {
 		fmt.Println(err)
 		return err
+	}
+	// if ok write to configuration file
+	if success := WriteInbloudClient([]string{id}, "create"); success == true {
+		fmt.Println("成功在配置文件中假如客户端信息，请重启xray服务器")
 	}
 	return nil
 }
 
-// UpdateUser 更新Trojan用户名和密码
-func (mysql *Mysql) UpdateUser(id uint, username string, base64Pass string, originPass string) error {
+// UpdateUser 更新Xray用户名和密码
+func (mysql *Mysql) UpdateUser(id string, username string, base64Pass string, originPass string) error {
 	db := mysql.GetDB()
 	if db == nil {
 		return errors.New("can't connect mysql")
@@ -174,13 +187,13 @@ func (mysql *Mysql) UpdateUser(id uint, username string, base64Pass string, orig
 }
 
 // DeleteUser 删除用户
-func (mysql *Mysql) DeleteUser(id uint) error {
+func (mysql *Mysql) DeleteUser(id string) error {
 	db := mysql.GetDB()
 	if db == nil {
 		return errors.New("can't connect mysql")
 	}
 	defer db.Close()
-	if userList, err := mysql.GetData(strconv.Itoa(int(id))); err != nil {
+	if userList, err := mysql.GetData(id); err != nil {
 		return err
 	} else if userList != nil && len(userList) == 0 {
 		return fmt.Errorf("不存在id为%d的用户", id)
@@ -188,6 +201,10 @@ func (mysql *Mysql) DeleteUser(id uint) error {
 	if _, err := db.Exec(fmt.Sprintf("DELETE FROM users WHERE id=%d;", id)); err != nil {
 		fmt.Println(err)
 		return err
+	}
+	// if ok write to configuration file
+	if success := WriteInbloudClient([]string{id}, "delete"); success == true {
+		fmt.Println("成功删除配置文件中客户端信息，请重启xray服务器")
 	}
 	return nil
 }
@@ -244,7 +261,7 @@ func (mysql *Mysql) DailyCheckExpire() (bool, error) {
 }
 
 // CancelExpire 取消过期时间
-func (mysql *Mysql) CancelExpire(id uint) error {
+func (mysql *Mysql) CancelExpire(id string) error {
 	db := mysql.GetDB()
 	if db == nil {
 		return errors.New("can't connect mysql")
@@ -258,7 +275,7 @@ func (mysql *Mysql) CancelExpire(id uint) error {
 }
 
 // SetExpire 设置过期时间
-func (mysql *Mysql) SetExpire(id uint, useDays uint) error {
+func (mysql *Mysql) SetExpire(id string, useDays uint) error {
 	now := time.Now()
 	utc, err := time.LoadLocation("Asia/Shanghai")
 	if err != nil {
@@ -281,7 +298,7 @@ func (mysql *Mysql) SetExpire(id uint, useDays uint) error {
 }
 
 // SetQuota 限制流量
-func (mysql *Mysql) SetQuota(id uint, quota int) error {
+func (mysql *Mysql) SetQuota(id string, quota int) error {
 	db := mysql.GetDB()
 	if db == nil {
 		return errors.New("can't connect mysql")
@@ -341,7 +358,7 @@ ADD COLUMN expiryDate char(10) DEFAULT '';
 }
 
 // CleanData 清空流量统计
-func (mysql *Mysql) CleanData(id uint) error {
+func (mysql *Mysql) CleanData(id string) error {
 	db := mysql.GetDB()
 	if db == nil {
 		return errors.New("can't connect mysql")

@@ -81,7 +81,7 @@ func RunTime() string {
 	return ""
 }
 
-// Version xray版本
+// Version xray原始文件的版本
 func Version() string {
 	flag := "-v"
 	result := strings.TrimSpace(util.ExecCommandWithResult("/usr/bin/xray/xray " + flag))
@@ -97,11 +97,6 @@ func Version() string {
 func Type() string {
 	tType, _ := core.GetValue("xrayType")
 	if tType == "" {
-		if strings.Contains(Status(false), "trojan-go") {
-			tType = "xray"
-		} else {
-			tType = "xray"
-		}
 		_ = core.SetValue("xrayType", tType)
 	}
 	return tType
@@ -158,5 +153,5 @@ func SetDomain(domain string) {
 // GetDomainAndPort 获取域名和端口
 func GetDomainAndPort() (string, int) {
 	config := core.Load("")
-	return config.Inbounds[0].Prototocol, config.Inbounds[0].Port
+	return config.Inbounds[0].StreamSettings.SNI, config.Inbounds[0].Port
 }

@@ -19,7 +19,7 @@ func WebMenu() {
 	}
 }
 
-// ResetAdminPass 重置管理员密码
+// ResetAdminPass 重置管理员密码,使用leveldb
 func ResetAdminPass() {
 	inputPass := util.Input("请输入admin用户密码: ", "")
 	if inputPass == "" {

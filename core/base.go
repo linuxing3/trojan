@@ -13,8 +13,8 @@ type Config struct {
 type InBoundConfig struct {
 	OutBoundConfig
 	Port           int                        `json:"port"`
-	Listen         int                        `json:"listen"`
-	Settings       []InBoundSettingConfig     `json:"settings"`
+	Listen         string                     `json:"listen"`
+	Settings       InBoundSettingConfig       `json:"settings"`
 	StreamSettings InBoundStreamSettingConfig `json:"streamSettings"`
 }
 

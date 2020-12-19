@@ -203,7 +203,16 @@ if ! [[ -f "$CONFIGPATH" ]] || prompt "The server config already exists in $CONF
     {
       "protocol": "freedom"
     }
-  ]
+  ],
+  "mysql": {
+    "enabled": true,
+    "server_addr": "127.0.0.1",
+    "server_port": 31911,
+    "database": "xray",
+    "username": "root",
+    "password": "qpRAW",
+    "cafile": ""
+  }
 }
 EOF
 else

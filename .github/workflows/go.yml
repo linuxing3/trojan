@@ -32,17 +32,10 @@ jobs:
         fi
 
     - name: Build
-      run: go build -v ./...
+      run: |
+        chmod +x build-upload.sh
+        ./build-upload.sh
 
     - name: Test
       run: go test -v ./...
     
-    - name: Upload a Release Asset
-      uses: actions/upload-release-asset@v1.0.2
-      with:
-        # The URL for uploading assets to the release
-        upload_url: xray.zip
-        # The path to the asset you want to upload
-        asset_path: result/xray
-        # The name of the asset you want to upload
-        asset_name: xray

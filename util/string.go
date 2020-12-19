@@ -2,11 +2,12 @@ package util
 
 import (
 	"fmt"
-	"github.com/eiannone/keyboard"
 	"math/rand"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/eiannone/keyboard"
 )
 
 const (
@@ -27,6 +28,37 @@ const (
 	// RESET 重置颜色
 	RESET = "\033[0m"
 )
+
+// Contains tells whether a contains x.
+func Contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
+}
+
+// ContainsObject 查找一个元素
+func ContainsObject(a []struct{ id string }, x struct{ id string }) bool {
+	for _, n := range a {
+		if x.id == n.id {
+			return true
+		}
+	}
+	return false
+}
+
+// Find returns the smallest index i at which x == a[i],
+// or len(a) if there is no such index.
+func Find(a []string, x string) int {
+	for i, n := range a {
+		if x == n {
+			return i
+		}
+	}
+	return len(a)
+}
 
 // IsInteger 判断字符串是否为整数
 func IsInteger(input string) bool {

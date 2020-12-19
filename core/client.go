@@ -32,7 +32,7 @@ type ClientTCP struct {
 }
 
 // WriteClient 生成客户端json
-func WriteClient(port int, password, domain, writePath string) bool {
+func WriteClient(port int, id, domain, writePath string) bool {
 	box := packr.New("client.json", "../asset")
 	data, err := box.Find("client.json")
 	if err != nil {
@@ -46,7 +46,7 @@ func WriteClient(port int, password, domain, writePath string) bool {
 	}
 	// 写入客户端配置文件
 	config.Inbounds[0].Port = port
-	config.Inbounds[0].Settings[0].Clients[0].Id = password
+	config.Inbounds[0].Settings.Clients[0].Id = id
 	outData, err := json.MarshalIndent(config, "", "    ")
 	if err != nil {
 		fmt.Println(err)
@@ -60,21 +60,21 @@ func WriteClient(port int, password, domain, writePath string) bool {
 }
 
 // WriteClient 生成客户端json
-func WriteTrojanClient(port int, password, domain, writePath string) bool {
+func WriteTrojanClient(port int, id, domain, writePath string) bool {
 	box := packr.New("client.json", "../asset")
 	data, err := box.Find("client.json")
 	if err != nil {
 		fmt.Println(err)
 		return false
 	}
-	config := TrojanClientConfig{}
+	config := ClientConfig{}
 	if err := json.Unmarshal(data, &config); err != nil {
 		fmt.Println(err)
 		return false
 	}
-	config.RemoteAddr = domain
-	config.RemotePort = port
-	config.Password = []string{password}
+	config.Inbounds[0].StreamSettings.SNI = domain
+	config.Inbounds[0].Port = port
+	config.Inbounds[0].Settings.Clients[0].Id = id
 	outData, err := json.MarshalIndent(config, "", "    ")
 	if err != nil {
 		fmt.Println(err)

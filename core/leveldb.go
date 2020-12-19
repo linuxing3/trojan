@@ -21,6 +21,7 @@ func GetValue(key string) (string, error) {
 }
 
 // SetValue 设置leveldb值
+// admin的密码是保存在leveldb中
 func SetValue(key string, value string) error {
 	db, err := leveldb.OpenFile(dbPath, nil)
 	defer db.Close()

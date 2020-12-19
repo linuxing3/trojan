@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"trojan/util"
 )
 
 var configPath = "/usr/local/etc/xray/config.json"
@@ -11,9 +12,7 @@ var configPath = "/usr/local/etc/xray/config.json"
 // ServerConfig 结构体
 type ServerConfig struct {
 	Config
-	SSl   ServerSSL `json:"ssl"`
-	Tcp   ServerTCP `json:"tcp"`
-	Mysql Mysql     `json: "mysql"`
+	Mysql Mysql `json: "mysql"`
 }
 
 // TrojanServerConfig 结构体
@@ -93,13 +92,10 @@ func WriteMysql(mysql *Mysql) bool {
 // WriteTls 写tls配置
 func WriteTls(cert, key, domain string) bool {
 	config := Load("")
-	// 第一层
-	config.SSl.Cert = cert
-	config.SSl.Key = key
-	config.SSl.Sni = domain
 	// 入站层的设置
-	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].CertificateFile = cert
-	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].KeyFile = key
+	certificates := config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0]
+	certificates.CertificateFile = cert
+	certificates.KeyFile = key
 	config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
@@ -107,15 +103,46 @@ func WriteTls(cert, key, domain string) bool {
 // WriteDomain 写域名
 func WriteDomain(domain string) bool {
 	config := Load("")
-	config.SSl.Sni = domain
 	config.Config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
 
-// WritePassword 写密码
-func WritePassword(pass []string) bool {
+// WriteInbloudClient 写入站客户端信息
+func WriteInbloudClient(ids []string, flag string) bool {
 	config := Load("")
-	config.Inbounds[0].Settings[0].Clients[0].Id = pass[0]
+	// 获取xray入站的client列表
+	clients := config.Inbounds[0].Settings.Clients
+	// 生成包括现有clinet的id的列表
+	var clientsKeys []string
+	for _, client := range clients {
+		clientsKeys = append(clientsKeys, client.Id)
+	}
+	// CRUD更新
+	if flag == "create" {
+		// 匹配ids，如果没有就插入新的clients
+		for _, id := range ids {
+			if !util.Contains(clientsKeys, id) {
+				var newClient InBoundSettingClientConfig
+				newClient.Id = id
+				newClient.Email = "love@example.com"
+				newClient.Level = 0
+				newClient.Flow = "xtls-rprx-direct"
+				clients = append(clients, newClient)
+			}
+		}
+	} else if flag == "delete" {
+		for _, id := range ids {
+			if util.Contains(clientsKeys, id) {
+				for i, k := range clients {
+					if k.Id == id {
+						clients = append(clients[:i], clients[i+1:]...)
+					}
+				}
+			}
+		}
+	}
+	// 重新写回到配置文件中
+	config.Inbounds[0].Settings.Clients = clients
 	return Save(config, "")
 }
 
