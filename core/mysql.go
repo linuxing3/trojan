@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(64) NOT NULL,
     password CHAR(56) NOT NULL,
     passwordShow VARCHAR(255) NOT NULL,
-    email CHAR(56) NOT NULL,
-    level CHAR(56) NOT NULL,
+    email CHAR(56) NOT NULL DEFAULT 'love@example',
+    level CHAR(56) NOT NULL DEFAULT 0,
     quota BIGINT NOT NULL DEFAULT 0,
     download BIGINT UNSIGNED NOT NULL DEFAULT 0,
     upload BIGINT UNSIGNED NOT NULL DEFAULT 0,
@@ -114,7 +114,7 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		if err := rows.Scan(&id, &username, &originPass, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
+		if err := rows.Scan(&id, &username, &originPass, &level, &email, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
 			return nil, err
 		}
 		userList = append(userList, &User{
@@ -138,6 +138,8 @@ func queryUser(db *sql.DB, sql string) (*User, error) {
 		id         string
 		username   string
 		originPass string
+		level      string
+		email      string
 		passShow   string
 		download   uint64
 		upload     uint64
@@ -146,7 +148,7 @@ func queryUser(db *sql.DB, sql string) (*User, error) {
 		expiryDate string
 	)
 	row := db.QueryRow(sql)
-	if err := row.Scan(&id, &username, &originPass, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
+	if err := row.Scan(&id, &username, &originPass, &level, &email, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
 		return nil, err
 	}
 	return &User{ID: id, Username: username, Password: originPass, Download: download, Upload: upload, Quota: quota, UseDays: useDays, ExpiryDate: expiryDate}, nil

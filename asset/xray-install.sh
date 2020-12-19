@@ -1,6 +1,6 @@
 #!/bin/bash
 # source: https://github.com/trojan-gfw/trojan-quickstart
-set -eo pipefail
+# set -eo pipefail
 
 # trojan: 0, trojan-go: 1
 TYPE=0
