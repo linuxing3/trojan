@@ -231,7 +231,7 @@ func InstallMysqlHelper(database string) {
 		// install docker
 		InstallDocker()
 		// 显示说明：链接并创建一个trojan的数据库
-		fmt.Println(fmt.Sprintf(chooseDbDockerRun, mysql.ServerPort, mysql.Password))
+		fmt.Println(fmt.Sprintf(chooseDbDockerRun, mysql.ServerPort, mysql.Password, database))
 		if util.CheckCommandExists("setenforce") {
 			util.ExecCommand("setenforce 0")
 		}
