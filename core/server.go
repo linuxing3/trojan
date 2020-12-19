@@ -13,7 +13,6 @@ var extConfigPath = "/usr/local/etc/xray/ext.config.json"
 // ServerConfig 结构体
 type ServerConfig struct {
 	Config
-	Mysql Mysql `json: "mysql"`
 }
 
 // TrojanServerConfig 结构体
@@ -21,7 +20,7 @@ type TrojanServerConfig struct {
 	TrojanConfig
 	SSl   ServerSSL `json:"ssl"`
 	Tcp   ServerTCP `json:"tcp"`
-	Mysql Mysql     `json: "mysql"`
+	Mysql Mysql     `json:"mysql"`
 }
 
 // ServerSSL 结构体
