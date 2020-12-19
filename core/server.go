@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-
-	"github.com/google/uuid"
 )
 
 var configPath = "/usr/local/etc/xray/config.json"
@@ -116,11 +114,7 @@ func WriteDomain(domain string) bool {
 
 // WritePassword 写密码
 func WritePassword(pass []string) bool {
-	var u1 string = fmt.Sprintf("%s", uuid.New())
 	config := Load("")
-	if pass == nil {
-		pass = []string{u1}
-	}
 	config.Inbounds[0].Settings[0].Clients[0].Id = pass[0]
 	return Save(config, "")
 }

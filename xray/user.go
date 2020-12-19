@@ -7,6 +7,8 @@ import (
 	"strings"
 	"trojan/core"
 	"trojan/util"
+
+	"github.com/google/uuid"
 )
 
 // UserMenu 用户管理菜单
@@ -31,7 +33,10 @@ func UserMenu() {
 
 // AddUser 添加用户
 func AddUser() {
-	randomUser := util.RandString(4)
+	// TODO 这里可以更改为uuid，用于xray
+	randomUser := fmt.Sprintf("%s", uuid.New())
+	// randomUser := util.RandString(4)
+
 	randomPass := util.RandString(8)
 	inputUser := util.Input(fmt.Sprintf("生成随机用户名: %s, 使用直接回车, 否则输入自定义用户名: ", randomUser), randomUser)
 	if inputUser == "admin" {
