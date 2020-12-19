@@ -154,7 +154,7 @@ func WriteInbloudClient(ids []string, flag string) bool {
 		for _, id := range ids {
 			if !util.Contains(clientsKeys, id) {
 				var newClient InBoundSettingClientConfig
-				newClient.Id = id
+				newClient.Id = "xray"
 				newClient.Email = "love@example.com"
 				newClient.Level = 0
 				newClient.Flow = "xtls-rprx-direct"

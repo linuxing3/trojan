@@ -73,7 +73,7 @@ func (mysql *Mysql) CreateTable() {
 	defer db.Close()
 	if _, err := db.Exec(`
 CREATE TABLE IF NOT EXISTS users (
-    id CHAR(56) NOT NULL,
+    id CHAR(56) NOT NULL DEFAULT '5e61f46e-7035-4aa8-9991-bf0411326e87',
     username VARCHAR(64) NOT NULL,
     password CHAR(56) NOT NULL,
     passwordShow VARCHAR(255) NOT NULL,
@@ -198,9 +198,9 @@ func (mysql *Mysql) DeleteUser(id string) error {
 	if userList, err := mysql.GetData(id); err != nil {
 		return err
 	} else if userList != nil && len(userList) == 0 {
-		return fmt.Errorf("不存在id为%d的用户", id)
+		return fmt.Errorf("不存在id为%s的用户", id)
 	}
-	if _, err := db.Exec(fmt.Sprintf("DELETE FROM users WHERE id=%d;", id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("DELETE FROM users WHERE id='%s';", id)); err != nil {
 		fmt.Println(err)
 		return err
 	}

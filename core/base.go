@@ -15,7 +15,6 @@ type LogLevel struct {
 type InBoundConfig struct {
 	OutBoundConfig
 	Port           int                        `json:"port"`
-	Listen         string                     `json:"listen"`
 	Settings       InBoundSettingConfig       `json:"settings"`
 	StreamSettings InBoundStreamSettingConfig `json:"streamSettings"`
 }
@@ -35,8 +34,8 @@ type InBoundSettingConfig struct {
 // InBoundSettingClientConfig setting
 type InBoundSettingClientConfig struct {
 	Id       string `json:"id"`
-	Password string `json:"password"`
 	Flow     string `json:"flow"`
+	Password string `json:"password"`
 	Level    int    `json:"level"`
 	Email    string `json:"email"`
 }
@@ -61,7 +60,7 @@ type InBoundStreamSettingConfig struct {
 // XtlsSettingConfig seting
 type XtlsSettingConfig struct {
 	Alpn         []string            `json:"alpn"`
-	Certificates []CertificateConfig `json:"security"`
+	Certificates []CertificateConfig `json:"certificates"`
 }
 
 // TcpSettingConfig seting
@@ -75,7 +74,7 @@ type TcpSettingConfig struct {
 }
 
 type WsSettingConfig struct {
-	Path string `json:"alpn"`
+	Path string `json:"path"`
 }
 
 // CertificateConfig setting

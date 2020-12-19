@@ -73,6 +73,7 @@ func DelUser() {
 	if choice == -1 {
 		return
 	}
+	// FIXME
 	if mysql.DeleteUser(userList[choice-1].ID) == nil {
 		fmt.Println("删除用户成功!")
 	}

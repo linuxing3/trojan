@@ -153,5 +153,10 @@ func SetDomain(domain string) {
 // GetDomainAndPort 获取域名和端口
 func GetDomainAndPort() (string, int) {
 	config := core.Load("")
-	return config.Inbounds[0].StreamSettings.SNI, config.Inbounds[0].Port
+	if config.Inbounds[0].StreamSettings.SNI == "" {
+		return "localhost", config.Inbounds[0].Port
+	} else {
+		return config.Inbounds[0].StreamSettings.SNI, config.Inbounds[0].Port
+	}
+
 }
