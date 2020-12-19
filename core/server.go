@@ -45,6 +45,7 @@ func Load(path string) *ServerConfig {
 	if path == "" {
 		path = configPath
 	}
+	fmt.Println("加载服务端配置文件")
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
@@ -63,6 +64,7 @@ func Save(config *ServerConfig, path string) bool {
 	if path == "" {
 		path = configPath
 	}
+	fmt.Println("保存服务端配置文件")
 	data, err := json.MarshalIndent(config, "", "    ")
 	if err != nil {
 		fmt.Println(err)
