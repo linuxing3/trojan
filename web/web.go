@@ -40,25 +40,21 @@ func userRouter(router *gin.Engine) {
 			sid := c.PostForm("id")
 			username := c.PostForm("username")
 			password := c.PostForm("password")
-			id, _ := strconv.Atoi(sid)
-			c.JSON(200, controller.UpdateUser(uint(id), username, password))
+			c.JSON(200, controller.UpdateUser(sid, username, password))
 		})
 		user.POST("/expire", func(c *gin.Context) {
 			sid := c.PostForm("id")
 			sDays := c.PostForm("useDays")
-			id, _ := strconv.Atoi(sid)
 			useDays, _ := strconv.Atoi(sDays)
-			c.JSON(200, controller.SetExpire(uint(id), uint(useDays)))
+			c.JSON(200, controller.SetExpire(sid, uint(useDays)))
 		})
 		user.DELETE("/expire", func(c *gin.Context) {
 			sid := c.Query("id")
-			id, _ := strconv.Atoi(sid)
-			c.JSON(200, controller.CancelExpire(uint(id)))
+			c.JSON(200, controller.CancelExpire(sid))
 		})
 		user.DELETE("", func(c *gin.Context) {
-			stringId := c.Query("id")
-			id, _ := strconv.Atoi(stringId)
-			c.JSON(200, controller.DelUser(uint(id)))
+			sid := c.Query("id")
+			c.JSON(200, controller.DelUser(sid))
 		})
 	}
 }
@@ -102,14 +98,12 @@ func dataRouter(router *gin.Engine) {
 		data.POST("", func(c *gin.Context) {
 			sID := c.PostForm("id")
 			sQuota := c.PostForm("quota")
-			id, _ := strconv.Atoi(sID)
 			quota, _ := strconv.Atoi(sQuota)
-			c.JSON(200, controller.SetData(uint(id), quota))
+			c.JSON(200, controller.SetData(sID, quota))
 		})
 		data.DELETE("", func(c *gin.Context) {
 			sID := c.Query("id")
-			id, _ := strconv.Atoi(sID)
-			c.JSON(200, controller.CleanData(uint(id)))
+			c.JSON(200, controller.CleanData(sID))
 		})
 		data.POST("/resetDay", func(c *gin.Context) {
 			dayStr := c.DefaultPostForm("day", "1")

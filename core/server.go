@@ -119,7 +119,7 @@ func WriteInbloudClient(ids []string, flag string) bool {
 	}
 	// CRUD更新
 	if flag == "create" {
-		// 匹配ids，如果没有就插入新的clients
+		fmt.Printf("如果没有就插入新的client")
 		for _, id := range ids {
 			if !util.Contains(clientsKeys, id) {
 				var newClient InBoundSettingClientConfig
@@ -131,6 +131,7 @@ func WriteInbloudClient(ids []string, flag string) bool {
 			}
 		}
 	} else if flag == "delete" {
+		fmt.Printf("如果有就删除client")
 		for _, id := range ids {
 			if util.Contains(clientsKeys, id) {
 				for i, k := range clients {
@@ -140,8 +141,10 @@ func WriteInbloudClient(ids []string, flag string) bool {
 				}
 			}
 		}
+	} else {
+		fmt.Printf("无操作符，忽略。。。")
 	}
-	// 重新写回到配置文件中
+	fmt.Printf("重新写回到配置文件中")
 	config.Inbounds[0].Settings.Clients = clients
 	return Save(config, "")
 }
