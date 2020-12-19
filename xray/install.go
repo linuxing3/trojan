@@ -16,7 +16,7 @@ var (
 	dockerInstallUrl1 = "https://get.docker.com"
 	dockerInstallUrl2 = "https://git.io/docker-install"
 	dbDockerRun       = "docker run --name trojan-mariadb --restart=always -p %d:3306 -v /home/mariadb:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_ROOT_HOST=%% -e MYSQL_DATABASE=trojan -d mariadb:10.2"
-	chooseDbDockerRun = "docker run --name trojan-mariadb --restart=always -p %d:3306 -v /home/mariadb:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_ROOT_HOST=%% -e MYSQL_DATABASE=%s -d mariadb:10.2"
+	chooseDbDockerRun = "docker run --name xray-mariadb --restart=always -p %d:3306 -v /home/mariadb:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_ROOT_HOST=%% -e MYSQL_DATABASE=%s -d mariadb:10.2"
 )
 
 // InstallMenu 安装目录
@@ -29,7 +29,7 @@ func InstallMenu() {
 	case 2:
 		InstallTls()
 	case 3:
-		InstallMysql()
+		InstallMysqlHelper("xray")
 	default:
 		return
 	}
@@ -208,7 +208,7 @@ func InstallMysql() {
 	fmt.Println()
 }
 
-// InstallMysql 安装mysql
+// InstallMysqlHelper 安装mysql
 func InstallMysqlHelper(database string) {
 	var (
 		server   string
