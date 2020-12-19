@@ -45,6 +45,22 @@ chmod +x "$NAME"
 mv "$NAME" "$BINARYPATH"
 
 echo Installing $NAME server config to $CONFIGPATH...
+
+cat > "/usr/local/etc/xray/db.config.json" << EOF
+{
+  "mysql": {
+    "enabled": true,
+    "server_addr": "127.0.0.1",
+    "server_port": 31911,
+    "database": "xray",
+    "username": "root",
+    "password": "qpRAW",
+    "cafile": ""
+  }
+}
+EOF
+
+
 if ! [[ -f "$CONFIGPATH" ]] || prompt "The server config already exists in $CONFIGPATH, overwrite?"; then
     cat > "$CONFIGPATH" << EOF
 {
@@ -203,16 +219,7 @@ if ! [[ -f "$CONFIGPATH" ]] || prompt "The server config already exists in $CONF
     {
       "protocol": "freedom"
     }
-  ],
-  "mysql": {
-    "enabled": true,
-    "server_addr": "127.0.0.1",
-    "server_port": 31911,
-    "database": "xray",
-    "username": "root",
-    "password": "qpRAW",
-    "cafile": ""
-  }
+  ]
 }
 EOF
 else

@@ -8,6 +8,7 @@ import (
 )
 
 var configPath = "/usr/local/etc/xray/config.json"
+var extConfigPath = "/usr/local/etc/xray/ext.config.json"
 
 // ServerConfig 结构体
 type ServerConfig struct {
@@ -46,13 +47,16 @@ func Load(path string) *ServerConfig {
 		path = configPath
 	}
 	fmt.Println("加载服务端配置文件")
+	fmt.Println("文件位置:" + path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
+		fmt.Println("加载服务端配置文件失败")
 		fmt.Println(err)
 		return nil
 	}
 	config := ServerConfig{}
 	if err := json.Unmarshal(data, &config); err != nil {
+		fmt.Println("json写入失败")
 		fmt.Println(err)
 		return nil
 	}
@@ -77,27 +81,28 @@ func Save(config *ServerConfig, path string) bool {
 	return true
 }
 
-// GetMysql 获取mysql连接
+// GetMysql 获取mysql连接，配置文件是单独的
 func GetMysql() *Mysql {
-	config := Load("")
+	config := Load(extConfigPath)
 	return &config.Mysql
 }
 
-// WriteMysql 写mysql配置
+// WriteMysql 写mysql配置，配置文件是单独的
 func WriteMysql(mysql *Mysql) bool {
+	fmt.Printf("写入mysql配置")
+	fmt.Printf("[database]:" + mysql.Database)
 	mysql.Enabled = true
-	config := Load("")
+	config := Load(extConfigPath)
 	config.Mysql = *mysql
-	return Save(config, "")
+	return Save(config, extConfigPath)
 }
 
 // WriteTls 写tls配置
 func WriteTls(cert, key, domain string) bool {
 	config := Load("")
 	// 入站层的设置
-	certificates := config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0]
-	certificates.CertificateFile = cert
-	certificates.KeyFile = key
+	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].CertificateFile = cert
+	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].KeyFile = key
 	config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
