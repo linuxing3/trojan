@@ -163,8 +163,8 @@ func Start(host string, port int, isSSL bool) {
 	util.OpenPort(port)
 	if isSSL {
 		config := core.Load("")
-		ssl := &config.SSl
-		router.RunTLS(fmt.Sprintf("%s:%d", host, port), ssl.Cert, ssl.Key)
+		ssl := &config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0]
+		router.RunTLS(fmt.Sprintf("%s:%d", host, port), ssl.CertificateFile, ssl.KeyFile)
 	} else {
 		router.Run(fmt.Sprintf("%s:%d", host, port))
 	}

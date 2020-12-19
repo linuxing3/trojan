@@ -83,7 +83,7 @@ func CreateUser(username string, password string) *ResponseBody {
 }
 
 // UpdateUser 更新用户
-func UpdateUser(id uint, username string, password string) *ResponseBody {
+func UpdateUser(id string, username string, password string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	if username == "admin" {
@@ -120,7 +120,7 @@ func UpdateUser(id uint, username string, password string) *ResponseBody {
 }
 
 // DelUser 删除用户
-func DelUser(id uint) *ResponseBody {
+func DelUser(id string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	mysql := core.GetMysql()
@@ -131,7 +131,7 @@ func DelUser(id uint) *ResponseBody {
 }
 
 // SetExpire 设置用户过期
-func SetExpire(id uint, useDays uint) *ResponseBody {
+func SetExpire(id string, useDays uint) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	mysql := core.GetMysql()
@@ -142,7 +142,7 @@ func SetExpire(id uint, useDays uint) *ResponseBody {
 }
 
 // CancelExpire 取消设置用户过期
-func CancelExpire(id uint) *ResponseBody {
+func CancelExpire(id string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	mysql := core.GetMysql()

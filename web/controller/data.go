@@ -13,7 +13,7 @@ import (
 var c *cron.Cron
 
 // SetData 设置流量限制
-func SetData(id uint, quota int) *ResponseBody {
+func SetData(id string, quota int) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	mysql := core.GetMysql()
@@ -24,7 +24,7 @@ func SetData(id uint, quota int) *ResponseBody {
 }
 
 // CleanData 清空流量
-func CleanData(id uint) *ResponseBody {
+func CleanData(id string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	mysql := core.GetMysql()
