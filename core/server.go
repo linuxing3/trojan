@@ -46,17 +46,17 @@ func Load(path string) *ServerConfig {
 	if path == "" {
 		path = configPath
 	}
-	fmt.Println("加载服务端配置文件")
+	fmt.Println("加载xray服务端配置文件")
 	fmt.Println("文件位置:" + path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("加载服务端配置文件失败")
+		fmt.Println("加载xray服务端配置文件失败")
 		fmt.Println(err)
 		return nil
 	}
 	config := ServerConfig{}
 	if err := json.Unmarshal(data, &config); err != nil {
-		fmt.Println("json写入失败")
+		fmt.Println("json写入xray失败")
 		fmt.Println(err)
 		return nil
 	}
@@ -68,13 +68,15 @@ func Save(config *ServerConfig, path string) bool {
 	if path == "" {
 		path = configPath
 	}
-	fmt.Println("保存服务端配置文件")
+	fmt.Println("保存xray服务端配置文件")
 	data, err := json.MarshalIndent(config, "", "    ")
 	if err != nil {
+		fmt.Println("xray服务端配置文件MarshalIndent失败")
 		fmt.Println(err)
 		return false
 	}
 	if err = ioutil.WriteFile(path, data, 0644); err != nil {
+		fmt.Println("保存xray服务端配置文件失败")
 		fmt.Println(err)
 		return false
 	}
@@ -83,8 +85,20 @@ func Save(config *ServerConfig, path string) bool {
 
 // GetMysql 获取mysql连接，配置文件是单独的
 func GetMysql() *Mysql {
-	config := Load(extConfigPath)
-	return &config.Mysql
+	fmt.Printf("加载mysql配置")
+	data, err := ioutil.ReadFile(extConfigPath)
+	if err != nil {
+		fmt.Println("加载mysql配置文件失败")
+		fmt.Println(err)
+		return nil
+	}
+	config := Mysql{}
+	if err := json.Unmarshal(data, &config); err != nil {
+		fmt.Println("json写入mysql失败")
+		fmt.Println(err)
+		return nil
+	}
+	return &config
 }
 
 // WriteMysql 写mysql配置，配置文件是单独的
@@ -92,9 +106,20 @@ func WriteMysql(mysql *Mysql) bool {
 	fmt.Printf("写入mysql配置")
 	fmt.Printf("[database]:" + mysql.Database)
 	mysql.Enabled = true
-	config := Load(extConfigPath)
-	config.Mysql = *mysql
-	return Save(config, extConfigPath)
+
+	fmt.Println("保存msql配置文件")
+	data, err := json.MarshalIndent(mysql, "", "    ")
+	if err != nil {
+		fmt.Println("保存mysql配置文件MarshalIndent失败")
+		fmt.Println(err)
+		return false
+	}
+	if err = ioutil.WriteFile(extConfigPath, data, 0644); err != nil {
+		fmt.Println("保存mysql配置文件失败")
+		fmt.Println(err)
+		return false
+	}
+	return true
 }
 
 // WriteTls 写tls配置
@@ -110,7 +135,7 @@ func WriteTls(cert, key, domain string) bool {
 // WriteDomain 写域名
 func WriteDomain(domain string) bool {
 	config := Load("")
-	config.Config.Inbounds[0].StreamSettings.SNI = domain
+	config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
 

@@ -44,10 +44,11 @@ func AddUser() {
 	}
 	// uuid，用于xray
 	uuid := fmt.Sprintf("%s", uuid.New())
+	fmt.Println(util.Yellow("[uuid]:" + uuid))
 	// 获取数据库配置
 	mysql := core.GetMysql()
 	// 1. 通过用户名获取用户，存在报错
-	if user := mysql.GetUserByName(inputUser); user != nil || user.ID == uuid {
+	if user := mysql.GetUserByName(inputUser); user != nil {
 		fmt.Println(util.Yellow("已存在用户。[用户名]:" + inputUser + "。[uuid]:" + uuid))
 		return
 	}
@@ -56,10 +57,6 @@ func AddUser() {
 	base64Pass := base64.StdEncoding.EncodeToString([]byte(inputPass))
 	if user := mysql.GetUserByPass(base64Pass); user != nil {
 		fmt.Println(util.Yellow("已存在密码为: " + inputPass + " 的用户!"))
-		return
-	}
-	if user := mysql.GetUserByName(inputUser); user.ID == uuid {
-		fmt.Println(util.Yellow("已存在id为: " + inputUser + " 的用户!"))
 		return
 	}
 	// 创建新用户
