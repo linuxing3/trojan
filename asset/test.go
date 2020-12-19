@@ -74,7 +74,6 @@ type InBoundSettingFallbackConfig struct {
 // InBoundStreamSettingConfig seting
 type InBoundStreamSettingConfig struct {
 	Network      string            `json:"network"`
-	SNI          string            `json:"sni"`
 	Security     string            `json:"security"`
 	XtlsSettings XtlsSettingConfig `json:"xtlsSettings"`
 	TcpSettings  TcpSettingConfig  `json:"tcpSettings"`

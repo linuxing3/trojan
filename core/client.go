@@ -72,7 +72,6 @@ func WriteTrojanClient(port int, id, domain, writePath string) bool {
 		fmt.Println(err)
 		return false
 	}
-	config.Inbounds[0].StreamSettings.SNI = domain
 	config.Inbounds[0].Port = port
 	config.Inbounds[0].Settings.Clients[0].Id = id
 	outData, err := json.MarshalIndent(config, "", "    ")

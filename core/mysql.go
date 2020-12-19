@@ -138,9 +138,9 @@ func queryUser(db *sql.DB, sql string) (*User, error) {
 		id         string
 		username   string
 		originPass string
+		passShow   string
 		level      string
 		email      string
-		passShow   string
 		download   uint64
 		upload     uint64
 		quota      int64
@@ -166,7 +166,7 @@ func (mysql *Mysql) CreateUser(id string, username string, base64Pass string, or
 		fmt.Println(err)
 		return err
 	}
-	// if ok write to configuration file
+	// FIXME if ok write to configuration file
 	if success := WriteInbloudClient([]string{id}, "create"); success == true {
 		fmt.Println("成功在配置文件中假如客户端信息，请重启xray服务器")
 	}
@@ -181,7 +181,7 @@ func (mysql *Mysql) UpdateUser(id string, username string, base64Pass string, or
 	}
 	defer db.Close()
 	encryPass := sha256.Sum224([]byte(originPass))
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET username='%s', password='%x', passwordShow='%s' WHERE id=%d;", username, encryPass, base64Pass, id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET username='%s', password='%x', passwordShow='%s' WHERE id='%s';", username, encryPass, base64Pass, id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -204,7 +204,7 @@ func (mysql *Mysql) DeleteUser(id string) error {
 		fmt.Println(err)
 		return err
 	}
-	// if ok write to configuration file
+	// FIXME if ok write to configuration file
 	if success := WriteInbloudClient([]string{id}, "delete"); success == true {
 		fmt.Println("成功删除配置文件中客户端信息，请重启xray服务器")
 	}
@@ -223,7 +223,7 @@ func (mysql *Mysql) MonthlyResetData() error {
 		return err
 	}
 	for _, user := range userList {
-		if _, err := db.Exec(fmt.Sprintf("UPDATE users SET download=0, upload=0 WHERE id=%d;", user.ID)); err != nil {
+		if _, err := db.Exec(fmt.Sprintf("UPDATE users SET download=0, upload=0 WHERE id='%s';", user.ID)); err != nil {
 			return err
 		}
 	}
@@ -251,7 +251,7 @@ func (mysql *Mysql) DailyCheckExpire() (bool, error) {
 	}
 	for _, user := range userList {
 		if user.ExpiryDate == todayDay {
-			if _, err := db.Exec(fmt.Sprintf("UPDATE users SET quota=0 WHERE id=%d;", user.ID)); err != nil {
+			if _, err := db.Exec(fmt.Sprintf("UPDATE users SET quota=0 WHERE id='%s';", user.ID)); err != nil {
 				return false, err
 			}
 			if !needRestart {
@@ -269,7 +269,7 @@ func (mysql *Mysql) CancelExpire(id string) error {
 		return errors.New("can't connect mysql")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET useDays=0, expiryDate='' WHERE id=%d;", id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET useDays=0, expiryDate='' WHERE id='%s';", id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -292,7 +292,7 @@ func (mysql *Mysql) SetExpire(id string, useDays uint) error {
 		return errors.New("can't connect mysql")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET useDays=%d, expiryDate='%s' WHERE id=%d;", useDays, expiryDate, id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET useDays=%d, expiryDate='%s' WHERE id='%s';", useDays, expiryDate, id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -306,7 +306,7 @@ func (mysql *Mysql) SetQuota(id string, quota int) error {
 		return errors.New("can't connect mysql")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET quota=%d WHERE id=%d;", quota, id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET quota=%d WHERE id='%s';", quota, id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -336,7 +336,7 @@ func (mysql *Mysql) UpgradeDB() error {
 			pass, _ := GetValue(fmt.Sprintf("%s_pass", user.Username))
 			if pass != "" {
 				base64Pass := base64.StdEncoding.EncodeToString([]byte(pass))
-				if _, err := db.Exec(fmt.Sprintf("UPDATE users SET passwordShow='%s' WHERE id=%d;", base64Pass, user.ID)); err != nil {
+				if _, err := db.Exec(fmt.Sprintf("UPDATE users SET passwordShow='%s' WHERE id='%s';", base64Pass, user.ID)); err != nil {
 					fmt.Println(err)
 					return err
 				}
@@ -366,7 +366,7 @@ func (mysql *Mysql) CleanData(id string) error {
 		return errors.New("can't connect mysql")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET download=0, upload=0 WHERE id=%d;", id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET download=0, upload=0 WHERE id='%s';", id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -461,8 +461,10 @@ func (mysql *Mysql) GetData(ids ...string) ([]*User, error) {
 	}
 	defer db.Close()
 	if len(ids) > 0 {
-		querySQL = querySQL + " WHERE id in (" + strings.Join(ids, ",") + ")"
+		querySQL = querySQL + " WHERE id in ('" + strings.Join(ids, "','") + "')"
 	}
+	fmt.Printf("[querySQL]: Delete user")
+	fmt.Printf(querySQL)
 	userList, err := queryUserList(db, querySQL)
 	if err != nil {
 		fmt.Println(err)

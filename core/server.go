@@ -127,14 +127,14 @@ func WriteTls(cert, key, domain string) bool {
 	// 入站层的设置
 	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].CertificateFile = cert
 	config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0].KeyFile = key
-	config.Inbounds[0].StreamSettings.SNI = domain
+	// config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
 
 // WriteDomain 写域名
 func WriteDomain(domain string) bool {
 	config := Load("")
-	config.Inbounds[0].StreamSettings.SNI = domain
+	// config.Inbounds[0].StreamSettings.SNI = domain
 	return Save(config, "")
 }
 
@@ -154,9 +154,8 @@ func WriteInbloudClient(ids []string, flag string) bool {
 		for _, id := range ids {
 			if !util.Contains(clientsKeys, id) {
 				var newClient InBoundSettingClientConfig
-				newClient.Id = "xray"
-				newClient.Email = "love@example.com"
-				newClient.Level = 0
+				newClient.Id = id
+				newClient.Password = id
 				newClient.Flow = "xtls-rprx-direct"
 				clients = append(clients, newClient)
 			}
