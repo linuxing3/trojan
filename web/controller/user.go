@@ -2,10 +2,12 @@ package controller
 
 import (
 	"encoding/base64"
-	"strconv"
+	"fmt"
 	"time"
 	"trojan/core"
 	"trojan/xray"
+
+	"github.com/google/uuid"
 )
 
 // UserList 获取用户列表
@@ -63,8 +65,9 @@ func CreateUser(username string, password string) *ResponseBody {
 		return &responseBody
 	}
 	mysql := core.GetMysql()
-	if user := mysql.GetUserByName(username); user != nil {
-		responseBody.Msg = "已存在用户名为: " + username + " 的用户!"
+	uuid := fmt.Sprintf("%s", uuid.New())
+	if user := mysql.GetUserByName(username); user != nil || user.ID == uuid {
+		responseBody.Msg = "已存在用户。[用户名]:" + username + "。[uuid]:" + uuid
 		return &responseBody
 	}
 	pass, err := base64.StdEncoding.DecodeString(password)
@@ -76,7 +79,7 @@ func CreateUser(username string, password string) *ResponseBody {
 		responseBody.Msg = "已存在密码为: " + string(pass) + " 的用户!"
 		return &responseBody
 	}
-	if err := mysql.CreateUser(username, password, string(pass)); err != nil {
+	if err := mysql.CreateUser(uuid, username, password, string(pass)); err != nil {
 		responseBody.Msg = err.Error()
 	}
 	return &responseBody
@@ -91,7 +94,7 @@ func UpdateUser(id string, username string, password string) *ResponseBody {
 		return &responseBody
 	}
 	mysql := core.GetMysql()
-	userList, err := mysql.GetData(strconv.Itoa(int(id)))
+	userList, err := mysql.GetData(id)
 	if err != nil {
 		responseBody.Msg = err.Error()
 		return &responseBody

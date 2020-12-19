@@ -33,8 +33,7 @@ func UserMenu() {
 
 // AddUser 添加用户
 func AddUser() {
-	// uuid，用于xray
-	uuid := fmt.Sprintf("%s", uuid.New())
+
 	// randomUser name and pass
 	randomUser := util.RandString(4)
 	randomPass := util.RandString(8)
@@ -43,11 +42,13 @@ func AddUser() {
 		fmt.Println(util.Yellow("不能新建用户名为'admin'的用户!"))
 		return
 	}
+	// uuid，用于xray
+	uuid := fmt.Sprintf("%s", uuid.New())
 	// 获取数据库配置
 	mysql := core.GetMysql()
 	// 1. 通过用户名获取用户，存在报错
-	if user := mysql.GetUserByName(inputUser); user != nil {
-		fmt.Println(util.Yellow("已存在用户名为: " + inputUser + " 的用户!"))
+	if user := mysql.GetUserByName(inputUser); user != nil || user.ID == uuid {
+		fmt.Println(util.Yellow("已存在用户。[用户名]:" + inputUser + "。[uuid]:" + uuid))
 		return
 	}
 	// 2. 生成随机密码，通过密码获取用户，存在报错
@@ -57,13 +58,12 @@ func AddUser() {
 		fmt.Println(util.Yellow("已存在密码为: " + inputPass + " 的用户!"))
 		return
 	}
-	// 3.通过uuid获取用户，存在报错
 	if user := mysql.GetUserByName(inputUser); user.ID == uuid {
 		fmt.Println(util.Yellow("已存在id为: " + inputUser + " 的用户!"))
 		return
 	}
 	// 创建新用户
-	if mysql.CreateUser(uuid, inputUser, base64Pass, inputPass) == nil {
+	if err := mysql.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
 		fmt.Println("新增用户成功!")
 	}
 }
