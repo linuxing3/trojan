@@ -228,37 +228,19 @@ func InstallSqlite() {
 	} else if choice == 1 {
 		sqlite = core.Sqlite{Path: path}
 		fmt.Println(fmt.Sprintf("Install sqlite server with xray"))
-		if util.CheckCommandExists("setenforce") {
-			util.ExecCommand("setenforce 0")
-		}
-		// 执行命令: 创建xray数据库
-		db := sqlite.GetDB()
-		if db != nil && db.Ping() == nil {
-			sqlite.Database = util.Input("请输入使用的数据库名(不存在可自动创建, 回车使用trojan): ", "xray")
-			db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", sqlite.Database))
-		} else {
-			fmt.Println("连接sqlite失败, 请重新输入")
-		}
-		db.Close()
-		fmt.Println("sqlite启动成功!")
 	} else if choice == 2 {
 		for {
 			for {
 				sqliteUrl := util.Input("请输入sqlite连接地址(格式: ./xray.db), 默认连接地址为./xray.db, 使用直接回车, 否则输入自定义连接地址: ",
-					"127.0.0.1:3306")
-				sqlite.Path = sqliteUrl
-				break
-			}
-			db := sqlite.GetDB()
-			if db != nil && db.Ping() == nil {
-				sqlite.Database = util.Input("请输入使用的数据库名(不存在可自动创建, 回车使用trojan): ", "xray")
-				db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", sqlite.Database))
-				break
-			} else {
-				fmt.Println("连接sqlite失败, 请重新输入")
+					path)
+				sqlite = core.Sqlite{Path: sqliteUrl}
 			}
 		}
 	}
+	// 执行命令: 创建xray数据库
+	db := sqlite.GetDB()
+	defer db.Close()
+	fmt.Println("sqlite启动成功!")
 	// 创建表
 	sqlite.CreateDefaultTable()
 	// 写入配置文件
@@ -268,6 +250,5 @@ func InstallSqlite() {
 		AddUser()
 	}
 	// 重启
-	Restart()
 	fmt.Println()
 }

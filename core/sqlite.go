@@ -30,17 +30,18 @@ var defaultPath string = "./xray.db"
 func (sqlite *Sqlite) GetDB() *sql.DB {
 	// 屏蔽sqlite驱动包的日志输出
 	log.Println("Creating sqlite-database.db...")
-	os.Remove(sqlite.Path)
-	file, err := os.Create(sqlite.Path) // Create SQLite file
-	if err != nil {
-		log.Fatal(err.Error())
+	if _, err := os.Lstat(sqlite.Path); err != nil {
+		// os.Remove(sqlite.Path)
+		file, err := os.Create(sqlite.Path) // Create SQLite file
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		file.Close()
 	}
-	file.Close()
 	db, err := sql.Open("sqlite3", sqlite.Path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 	return db
 }
 
