@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS users (
 	}
 }
 
-// 数据库查询全部的用户列表，用于GetData
+// 查询全部的用户列表，用于GetData，可以同时用于mysql和sqlite
 func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 	var (
 		id         string
@@ -118,6 +118,7 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 			return nil, err
 		}
 		fmt.Printf("用户名:" + username)
+		fmt.Printf("用户名:" + username)
 		fmt.Printf("uuid:" + id)
 		userList = append(userList, &User{
 			ID:         id,
@@ -135,6 +136,7 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 	return userList, nil
 }
 
+// 查询用户，用于GetData，可以同时用于mysql和sqli
 func queryUser(db *sql.DB, sql string) (*User, error) {
 	var (
 		id         string

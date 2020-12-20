@@ -121,6 +121,45 @@ func WriteMysql(mysql *Mysql) bool {
 	return true
 }
 
+// GetSqlite 获取sqlite连接，配置文件是单独的
+func GetSqlite() *Sqlite {
+	fmt.Printf("加载sqlite配置")
+	data, err := ioutil.ReadFile(extConfigPath)
+	if err != nil {
+		fmt.Println("加载sqlite配置文件失败")
+		fmt.Println(err)
+		return nil
+	}
+	config := Sqlite{}
+	if err := json.Unmarshal(data, &config); err != nil {
+		fmt.Println("json写入sqlite失败")
+		fmt.Println(err)
+		return nil
+	}
+	return &config
+}
+
+// WriteSqlite 写mysql配置，配置文件是单独的
+func WriteSqlite(sqlite *Sqlite) bool {
+	fmt.Printf("写入sqlite配置")
+	fmt.Printf("[database]:" + sqlite.Database)
+	sqlite.Enabled = true
+
+	fmt.Println("保存sqlite配置文件")
+	data, err := json.MarshalIndent(sqlite, "", "    ")
+	if err != nil {
+		fmt.Println("保存sqlite配置文件MarshalIndent失败")
+		fmt.Println(err)
+		return false
+	}
+	if err = ioutil.WriteFile(extConfigPath, data, 0644); err != nil {
+		fmt.Println("保存sqlite配置文件失败")
+		fmt.Println(err)
+		return false
+	}
+	return true
+}
+
 // WriteTls 写tls配置
 func WriteTls(cert, key, domain string) bool {
 	config := Load("")

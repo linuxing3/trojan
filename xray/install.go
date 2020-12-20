@@ -30,6 +30,8 @@ func InstallMenu() {
 		InstallTls()
 	case 3:
 		InstallMysql(XrayDbDockerRun, "xray")
+	case 3:
+		InstallSqlite()
 	default:
 		return
 	}
@@ -146,7 +148,7 @@ func InstallMysql(dockerCommand string, database string) {
 		mysql = core.Mysql{ServerAddr: server, ServerPort: util.RandomPort(), Password: util.RandString(5), Username: username, Database: database}
 		// install docker
 		InstallDocker()
-		// 显示说明：链接并创建一个trojan的数据库
+		// 显示说明：链接并创建一个xray的数据库
 		fmt.Println(fmt.Sprintf(dockerCommand, mysql.ServerPort, mysql.Password, database))
 		if util.CheckCommandExists("setenforce") {
 			util.ExecCommand("setenforce 0")
@@ -204,6 +206,68 @@ func InstallMysql(dockerCommand string, database string) {
 	core.WriteMysql(&mysql)
 	// 添加用户
 	if userList, _ := mysql.GetData(); len(userList) == 0 {
+		AddUser()
+	}
+	// 重启
+	Restart()
+	fmt.Println()
+}
+
+// InstallSqlite 安装InstallSqlite
+func InstallSqlite() {
+	var (
+		path   string
+		sqlite core.Sqlite
+		choice int
+	)
+	path = "./xray.db"
+	fmt.Println()
+	choice = util.LoopInput("请选择: ", []string{"安装Sqlite", "输入自定义Sqlite连接"}, true)
+	if choice < 0 {
+		return
+	} else if choice == 1 {
+		sqlite = core.Sqlite{Path: path}
+		fmt.Println(fmt.Sprintf("Install sqlite server with xray")
+		if util.CheckCommandExists("setenforce") {
+			util.ExecCommand("setenforce 0")
+		}
+		// 执行命令: 创建xray数据库
+		db := sqlite.GetDB()
+		for {
+			fmt.Printf("%s sqlite启动中,请稍等...\n", time.Now().Format("2006-01-02 15:04:05"))
+			err := db.Ping()
+			if err == nil {
+				db.Close()
+				break
+			} else {
+				time.Sleep(2 * time.Second)
+			}
+		}
+		fmt.Println("sqlite启动成功!")
+	} else if choice == 2 {
+		for {
+			for {
+				sqliteUrl := util.Input("请输入sqlite连接地址(格式: ./xray.db), 默认连接地址为./xray.db, 使用直接回车, 否则输入自定义连接地址: ",
+					"127.0.0.1:3306")
+				sqlite.Path = sqliteUrl
+				break
+			}
+			db := sqlite.GetDB()
+			if db != nil && db.Ping() == nil {
+				sqlite.Database = util.Input("请输入使用的数据库名(不存在可自动创建, 回车使用trojan): ", "xray")
+				db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", sqlite.Database))
+				break
+			} else {
+				fmt.Println("连接sqlite失败, 请重新输入")
+			}
+		}
+	}
+	// 创建表
+	sqlite.CreateDefaultTable()
+	// 写入配置文件
+	core.WriteSqlite(&sqlite)
+	// 添加用户
+	if userList, _ := sqlite.GetData(); len(userList) == 0 {
 		AddUser()
 	}
 	// 重启

@@ -45,13 +45,16 @@ func AddUser() {
 	// uuid，用于xray
 	uuid := fmt.Sprintf("%s", uuid.New())
 	fmt.Println(util.Yellow("[uuid]:" + uuid))
+
 	// 获取数据库配置
 	mysql := core.GetMysql()
+
 	// 1. 通过用户名获取用户，存在报错
 	if user := mysql.GetUserByName(inputUser); user != nil {
 		fmt.Println(util.Yellow("已存在用户。[用户名]:" + inputUser + "。[uuid]:" + uuid))
 		return
 	}
+
 	// 2. 生成随机密码，通过密码获取用户，存在报错
 	inputPass := util.Input(fmt.Sprintf("生成随机密码: %s, 使用直接回车, 否则输入自定义密码: ", randomPass), randomPass)
 	base64Pass := base64.StdEncoding.EncodeToString([]byte(inputPass))
@@ -59,23 +62,43 @@ func AddUser() {
 		fmt.Println(util.Yellow("已存在密码为: " + inputPass + " 的用户!"))
 		return
 	}
-	// 创建新用户
+
+	// 创建Mysql新用户
 	if err := mysql.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
-		fmt.Println("新增用户成功!")
+		fmt.Println("新增Mysql用户成功!")
+	} else {
+		fmt.Println(err)
 	}
+
+	// 创建Sqlite新用户
+	sqlite := core.GetSqlite()
+	if err := sqlite.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
+		fmt.Println("新增Sqlite用户成功!")
+	} else {
+		fmt.Println(err)
+	}
+
 }
 
 // DelUser 删除用户
 func DelUser() {
+
 	userList := UserList()
 	mysql := core.GetMysql()
+
 	choice := util.LoopInput("请选择要删除的用户序号: ", userList, true)
 	if choice == -1 {
 		return
 	}
 	// FIXME
 	if mysql.DeleteUser(userList[choice-1].ID) == nil {
-		fmt.Println("删除用户成功!")
+		fmt.Println("删除mysql用户成功!")
+	}
+
+	// Sqlite用户
+	sqlite := core.GetSqlite()
+	if sqlite.DeleteUser(userList[choice-1].ID) == nil {
+		fmt.Println("删除sqlite用户成功!")
 	}
 }
 
@@ -101,7 +124,12 @@ func SetUserQuota() {
 		}
 	}
 	if mysql.SetQuota(userList[choice-1].ID, limit) == nil {
-		fmt.Println("成功设置用户" + userList[choice-1].Username + "限制流量" + util.Bytefmt(uint64(limit)))
+		fmt.Println("成功设置mysql用户" + userList[choice-1].Username + "限制流量" + util.Bytefmt(uint64(limit)))
+	}
+
+	sqlite := core.GetSqlite()
+	if sqlite.SetQuota(userList[choice-1].ID, limit) == nil {
+		fmt.Println("成功设置sqlite用户" + userList[choice-1].Username + "限制流量" + util.Bytefmt(uint64(limit)))
 	}
 }
 
@@ -114,7 +142,11 @@ func CleanData() {
 		return
 	}
 	if mysql.CleanData(userList[choice-1].ID) == nil {
-		fmt.Println("清空流量成功!")
+		fmt.Println("清空mysql流量成功!")
+	}
+	sqlite := core.GetSqlite()
+	if sqlite.CleanData(userList[choice-1].ID) == nil {
+		fmt.Println("清空sqlite流量成功!")
 	}
 }
 
@@ -131,7 +163,11 @@ func CancelExpire() {
 		return
 	}
 	if mysql.CancelExpire(userList[choice-1].ID) == nil {
-		fmt.Println("取消限期成功!")
+		fmt.Println("取消mysql限期成功!")
+	}
+	sqlite := core.GetSqlite()
+	if sqlite.CancelExpire(userList[choice-1].ID) == nil {
+		fmt.Println("取消sqlite限期成功!")
 	}
 }
 
@@ -155,8 +191,13 @@ func SetupExpire() {
 	}
 	useDays, _ := strconv.Atoi(useDayStr)
 	if mysql.SetExpire(userList[choice-1].ID, uint(useDays)) == nil {
-		fmt.Println("设置限期成功!")
+		fmt.Println("设置mysql限期成功!")
 	}
+	sqlite := core.GetSqlite()
+	if sqlite.SetExpire(userList[choice-1].ID, uint(useDays)) == nil {
+		fmt.Println("设置sqlite限期成功!")
+	}
+
 }
 
 // CleanDataByName 清空指定用户流量
@@ -165,14 +206,34 @@ func CleanDataByName(usernames []string) {
 	if err := mysql.CleanDataByName(usernames); err != nil {
 		fmt.Println(err.Error())
 	} else {
-		fmt.Println("清空流量成功!")
+		fmt.Println("清空mysql流量成功!")
 	}
+
+	sqlite := core.GetSqlite()
+	if err := sqlite.CleanDataByName(usernames); err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("清空sqlite流量成功!")
+	}
+
 }
 
 // UserList 获取用户列表并打印显示
 func UserList(ids ...string) []*core.User {
+	var (
+		userList []*core.User
+		err      error
+	)
+	// mysql 作为主数据库
 	mysql := core.GetMysql()
-	userList, err := mysql.GetData(ids...)
+	if mysql == nil {
+		// sqlite 作为备用
+		sqlite := core.GetSqlite()
+		userList, err = sqlite.GetData(ids...)
+	} else {
+		userList, err = mysql.GetData(ids...)
+	}
+
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil
