@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"trojan/core"
 	"trojan/util"
 	"trojan/xray"
 
@@ -31,7 +30,7 @@ func check() {
 	if !util.IsExists("/usr/local/etc/xray/config.json") {
 		fmt.Println("本机未安装xray, 正在自动安装...")
 		xray.InstallXray()
-		core.WriteInbloudClient(nil, "create")
+		// core.WriteInbloudClient(nil, "create")
 		xray.InstallTls()
 		xray.InstallMysql(xray.XrayDbDockerRun, "xray")
 		util.ExecCommand("systemctl restart xray-web")

@@ -186,7 +186,7 @@ func UserList(ids ...string) []*core.User {
 		fmt.Printf("%d.\n", i+1)
 		fmt.Println("用户名: " + k.Username)
 		fmt.Println("客户端id: " + k.ID)
-		fmt.Println("密码: " + string(pass))
+		fmt.Println("密码: " + util.Green(fmt.Sprintf(string(pass))))
 		fmt.Println("上传流量: " + util.Cyan(util.Bytefmt(k.Upload)))
 		fmt.Println("下载流量: " + util.Cyan(util.Bytefmt(k.Download)))
 		if k.Quota < 0 {

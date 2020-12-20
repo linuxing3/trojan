@@ -117,6 +117,9 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 		if err := rows.Scan(&id, &username, &originPass, &level, &email, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
 			return nil, err
 		}
+		fmt.Printf("用户名:" + username)
+		fmt.Printf("用户名:" + username)
+		fmt.Printf("uuid:" + id)
 		userList = append(userList, &User{
 			ID:         id,
 			Username:   username,
@@ -166,10 +169,10 @@ func (mysql *Mysql) CreateUser(id string, username string, base64Pass string, or
 		fmt.Println(err)
 		return err
 	}
-	// FIXME if ok write to configuration file
-	if success := WriteInbloudClient([]string{id}, "create"); success == true {
-		fmt.Println("成功在配置文件中假如客户端信息，请重启xray服务器")
-	}
+	// // FIXME if ok write to configuration file
+	// if success := WriteInbloudClient([]string{id}, "create"); success == true {
+	// 	fmt.Println("成功在配置文件中假如客户端信息，请重启xray服务器")
+	// }
 	return nil
 }
 
@@ -205,9 +208,9 @@ func (mysql *Mysql) DeleteUser(id string) error {
 		return err
 	}
 	// FIXME if ok write to configuration file
-	if success := WriteInbloudClient([]string{id}, "delete"); success == true {
-		fmt.Println("成功删除配置文件中客户端信息，请重启xray服务器")
-	}
+	// if success := WriteInbloudClient([]string{id}, "delete"); success == true {
+	// 	fmt.Println("成功删除配置文件中客户端信息，请重启xray服务器")
+	// }
 	return nil
 }
 
@@ -463,7 +466,7 @@ func (mysql *Mysql) GetData(ids ...string) ([]*User, error) {
 	if len(ids) > 0 {
 		querySQL = querySQL + " WHERE id in ('" + strings.Join(ids, "','") + "')"
 	}
-	fmt.Printf("[querySQL]: Delete user")
+	fmt.Printf("[querySQL]: Get Data")
 	fmt.Printf(querySQL)
 	userList, err := queryUserList(db, querySQL)
 	if err != nil {
