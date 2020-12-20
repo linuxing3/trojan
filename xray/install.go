@@ -216,26 +216,24 @@ func InstallMysql(dockerCommand string, database string) {
 // InstallSqlite 安装InstallSqlite
 func InstallSqlite() {
 	var (
-		path     string
-		conffile string
-		sqlite   core.Sqlite
-		choice   int
+		path   string
+		sqlite core.Sqlite
+		choice int
 	)
 	path = "./xray.db"
-	conffile = "sqlite.json"
 	fmt.Println()
 	choice = util.LoopInput("请选择: ", []string{"安装Sqlite", "输入自定义Sqlite连接"}, true)
 	if choice < 0 {
 		return
 	} else if choice == 1 {
-		sqlite = core.Sqlite{Path: path, ConfFile: conffile, Enabled: true}
+		sqlite = core.Sqlite{Path: path, Enabled: true, Table: "users", Password: "20090909"}
 		fmt.Println(fmt.Sprintf("Install sqlite server with xray"))
 	} else if choice == 2 {
 		for {
 			for {
 				sqliteUrl := util.Input("请输入sqlite连接地址(格式: ./xray.db), 默认连接地址为./xray.db, 使用直接回车, 否则输入自定义连接地址: ",
 					path)
-				sqlite = core.Sqlite{Path: sqliteUrl, ConfFile: conffile, Enabled: true}
+				sqlite = core.Sqlite{Path: sqliteUrl, Enabled: true, Table: "users", Password: "20090909"}
 			}
 		}
 	}
