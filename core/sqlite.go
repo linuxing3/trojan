@@ -29,7 +29,7 @@ var defaultPath string = "./xray.db"
 // GetDB 获取sqlite数据库连接
 func (sqlite *Sqlite) GetDB() *sql.DB {
 	// 屏蔽sqlite驱动包的日志输出
-	log.Println("Creating sqlite-database.db...")
+	log.Println("Open xray.db...")
 	if _, err := os.Lstat(sqlite.Path); err != nil {
 		// os.Remove(sqlite.Path)
 		file, err := os.Create(sqlite.Path) // Create SQLite file
@@ -50,19 +50,17 @@ func (sqlite *Sqlite) CreateDefaultTable() bool {
 	db := sqlite.GetDB()
 	if _, err := db.Exec(`
 	CREATE TABLE IF NOT EXISTS users (
-			id CHAR(56) NOT NULL DEFAULT '5e61f46e-7035-4aa8-9991-bf0411326e87',
-			username VARCHAR(64) NOT NULL,
+			id CHAR(56) PRIMARY KEY NOT NULL,
+			username CHAR(64) NOT NULL,
 			password CHAR(56) NOT NULL,
-			passwordShow VARCHAR(255) NOT NULL,
-			email CHAR(56) NOT NULL DEFAULT 'love@example',
-			level CHAR(56) NOT NULL DEFAULT 0,
-			quota BIGINT NOT NULL DEFAULT 0,
-			download BIGINT UNSIGNED NOT NULL DEFAULT 0,
-			upload BIGINT UNSIGNED NOT NULL DEFAULT 0,
-			useDays INT(10) DEFAULT 0,
-			expiryDate CHAR(10) DEFAULT '',
-			PRIMARY KEY (id),
-			INDEX (password)
+			passwordShow CHAR(255) NOT NULL,
+			email CHAR(56),
+			level CHAR(56),
+			quota REAL,
+			download REAL,
+			upload REAL,
+			useDays INT(10),
+			expiryDate CHAR(10)
 	);
 			`); err != nil {
 		fmt.Println(err)
@@ -88,6 +86,7 @@ func (sqlite *Sqlite) CreateTable(dbName string, fields []string) bool {
 
 // CreateUser 创建Xray用户
 func (sqlite *Sqlite) CreateUser(id string, username string, base64Pass string, originPass string) error {
+
 	db := sqlite.GetDB()
 	if db == nil {
 		return errors.New("can't connect sqlite")

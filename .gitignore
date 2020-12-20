@@ -5,3 +5,5 @@ packrd/
 result/
 __debug_bin
 **/*/__debug_bin
+xray.db
+sqlite.json

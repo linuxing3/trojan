@@ -42,22 +42,28 @@ func AddUser() {
 		fmt.Println(util.Yellow("不能新建用户名为'admin'的用户!"))
 		return
 	}
-	// uuid，用于xray
+	// 1. uuid，用于xray
 	uuid := fmt.Sprintf("%s", uuid.New())
 	fmt.Println(util.Yellow("[uuid]:" + uuid))
-
-	// 获取数据库配置
-	mysql := core.GetMysql()
-
-	// 1. 通过用户名获取用户，存在报错
-	if user := mysql.GetUserByName(inputUser); user != nil {
-		fmt.Println(util.Yellow("已存在用户。[用户名]:" + inputUser + "。[uuid]:" + uuid))
-		return
-	}
 
 	// 2. 生成随机密码，通过密码获取用户，存在报错
 	inputPass := util.Input(fmt.Sprintf("生成随机密码: %s, 使用直接回车, 否则输入自定义密码: ", randomPass), randomPass)
 	base64Pass := base64.StdEncoding.EncodeToString([]byte(inputPass))
+
+	// 3. Optional 创建Sqlite新用户
+	sqlite := core.GetSqlite()
+	if err := sqlite.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
+		fmt.Println("新增Sqlite用户成功!")
+	} else {
+		fmt.Println(err)
+	}
+
+	// 4. 获取数据库配置
+	mysql := core.GetMysql()
+	if user := mysql.GetUserByName(inputUser); user != nil {
+		fmt.Println(util.Yellow("已存在用户。[用户名]:" + inputUser + "。[uuid]:" + uuid))
+		return
+	}
 	if user := mysql.GetUserByPass(base64Pass); user != nil {
 		fmt.Println(util.Yellow("已存在密码为: " + inputPass + " 的用户!"))
 		return
@@ -66,14 +72,6 @@ func AddUser() {
 	// 创建Mysql新用户
 	if err := mysql.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
 		fmt.Println("新增Mysql用户成功!")
-	} else {
-		fmt.Println(err)
-	}
-
-	// 创建Sqlite新用户
-	sqlite := core.GetSqlite()
-	if err := sqlite.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
-		fmt.Println("新增Sqlite用户成功!")
 	} else {
 		fmt.Println(err)
 	}

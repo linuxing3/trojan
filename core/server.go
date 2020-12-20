@@ -124,7 +124,7 @@ func WriteMysql(mysql *Mysql) bool {
 // GetSqlite 获取sqlite连接，配置文件是单独的
 func GetSqlite() *Sqlite {
 	fmt.Printf("加载sqlite配置")
-	data, err := ioutil.ReadFile(extConfigPath)
+	data, err := ioutil.ReadFile("./sqlite.json")
 	if err != nil {
 		fmt.Println("加载sqlite配置文件失败")
 		fmt.Println(err)
@@ -152,7 +152,7 @@ func WriteSqlite(sqlite *Sqlite) bool {
 		fmt.Println(err)
 		return false
 	}
-	if err = ioutil.WriteFile(extConfigPath, data, 0644); err != nil {
+	if err = ioutil.WriteFile("./sqlite.json", data, 0644); err != nil {
 		fmt.Println("保存sqlite配置文件失败")
 		fmt.Println(err)
 		return false
