@@ -22,7 +22,7 @@ var (
 // InstallMenu 安装目录
 func InstallMenu() {
 	fmt.Println()
-	menu := []string{"更新xray", "证书申请", "安装mysql"}
+	menu := []string{"更新xray", "证书申请", "安装mysql", "安装sqlite"}
 	switch util.LoopInput("请选择: ", menu, true) {
 	case 1:
 		InstallXray()
@@ -30,7 +30,7 @@ func InstallMenu() {
 		InstallTls()
 	case 3:
 		InstallMysql(XrayDbDockerRun, "xray")
-	case 3:
+	case 4:
 		InstallSqlite()
 	default:
 		return
@@ -227,22 +227,19 @@ func InstallSqlite() {
 		return
 	} else if choice == 1 {
 		sqlite = core.Sqlite{Path: path}
-		fmt.Println(fmt.Sprintf("Install sqlite server with xray")
+		fmt.Println(fmt.Sprintf("Install sqlite server with xray"))
 		if util.CheckCommandExists("setenforce") {
 			util.ExecCommand("setenforce 0")
 		}
 		// 执行命令: 创建xray数据库
 		db := sqlite.GetDB()
-		for {
-			fmt.Printf("%s sqlite启动中,请稍等...\n", time.Now().Format("2006-01-02 15:04:05"))
-			err := db.Ping()
-			if err == nil {
-				db.Close()
-				break
-			} else {
-				time.Sleep(2 * time.Second)
-			}
+		if db != nil && db.Ping() == nil {
+			sqlite.Database = util.Input("请输入使用的数据库名(不存在可自动创建, 回车使用trojan): ", "xray")
+			db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s;", sqlite.Database))
+		} else {
+			fmt.Println("连接sqlite失败, 请重新输入")
 		}
+		db.Close()
 		fmt.Println("sqlite启动成功!")
 	} else if choice == 2 {
 		for {

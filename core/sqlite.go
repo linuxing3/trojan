@@ -45,7 +45,7 @@ func (sqlite *Sqlite) GetDB() *sql.DB {
 }
 
 // CreateDefaultTable create table in db
-func (sqlite *Sqlite) CreateDefaultTable(dbName sql.NullString) bool {
+func (sqlite *Sqlite) CreateDefaultTable() bool {
 	db := sqlite.GetDB()
 	if _, err := db.Exec(`
 	CREATE TABLE IF NOT EXISTS users (
