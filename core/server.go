@@ -10,6 +10,8 @@ import (
 var configPath = "/usr/local/etc/xray/config.json"
 var extConfigPath = "/usr/local/etc/xray/ext.config.json"
 
+var sqliteConfPath = "./sqlite.json"
+
 // ServerConfig 结构体
 type ServerConfig struct {
 	Config
@@ -121,10 +123,10 @@ func WriteMysql(mysql *Mysql) bool {
 	return true
 }
 
-// GetSqlite 获取sqlite连接，配置文件是单独的
+// GetSqlite 获取sqlite连接，从硬盘读取配置文件，记得先写入
 func GetSqlite() *Sqlite {
 	fmt.Printf("加载sqlite配置")
-	data, err := ioutil.ReadFile("./sqlite.json")
+	data, err := ioutil.ReadFile(sqliteConfPath)
 	if err != nil {
 		fmt.Println("加载sqlite配置文件失败")
 		fmt.Println(err)
@@ -142,7 +144,7 @@ func GetSqlite() *Sqlite {
 // WriteSqlite 写mysql配置，配置文件是单独的
 func WriteSqlite(sqlite *Sqlite) bool {
 	fmt.Printf("写入sqlite配置")
-	fmt.Printf("[database]:" + sqlite.Database)
+	fmt.Printf("[database]:" + sqlite.Path)
 	sqlite.Enabled = true
 
 	fmt.Println("保存sqlite配置文件")
@@ -152,7 +154,7 @@ func WriteSqlite(sqlite *Sqlite) bool {
 		fmt.Println(err)
 		return false
 	}
-	if err = ioutil.WriteFile("./sqlite.json", data, 0644); err != nil {
+	if err = ioutil.WriteFile(sqliteConfPath, data, 0644); err != nil {
 		fmt.Println("保存sqlite配置文件失败")
 		fmt.Println(err)
 		return false

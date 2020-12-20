@@ -20,24 +20,36 @@ import (
 type Sqlite struct {
 	Enabled  bool   `json:"enabled"`
 	Path     string `json:"path"`
+	ConfFile string `json:"conffile"`
 	Password string `json:"password"`
-	Database string `json:"database"`
 }
 
 var defaultPath string = "./xray.db"
 
 // GetDB 获取sqlite数据库连接
 func (sqlite *Sqlite) GetDB() *sql.DB {
-	// 屏蔽sqlite驱动包的日志输出
-	log.Println("Open xray.db...")
-	if _, err := os.Lstat(sqlite.Path); err != nil {
-		// os.Remove(sqlite.Path)
+	var choice int
+	if util.IsExists(sqlite.Path) {
+		choice = util.LoopInput("请选择: ", []string{"重建新数据库", "使用现有数据库"}, true)
+	} else {
+		choice = 1
+	}
+
+	if choice == 1 {
+
+		log.Println("Create new xray.db...")
+		os.Remove(sqlite.Path)
+		os.Remove(sqlite.ConfFile)
 		file, err := os.Create(sqlite.Path) // Create SQLite file
 		if err != nil {
 			log.Fatal(err.Error())
 		}
 		file.Close()
+	} else if choice == 2 {
+		log.Println("Open xray.db...")
 	}
+
+	// 屏蔽sqlite驱动包的日志输出
 	db, err := sql.Open("sqlite3", sqlite.Path)
 	if err != nil {
 		log.Fatal(err)

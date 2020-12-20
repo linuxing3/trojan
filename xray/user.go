@@ -51,9 +51,11 @@ func AddUser() {
 	base64Pass := base64.StdEncoding.EncodeToString([]byte(inputPass))
 
 	// 3. Optional 创建Sqlite新用户
+	// FIXED 这里的配置是用硬盘配置文件中读取的，所以记得先写入配置文件才能正常使用
 	sqlite := core.GetSqlite()
 	if err := sqlite.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
 		fmt.Println("新增Sqlite用户成功!")
+		fmt.Println("")
 	} else {
 		fmt.Println(err)
 	}
@@ -72,6 +74,7 @@ func AddUser() {
 	// 创建Mysql新用户
 	if err := mysql.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
 		fmt.Println("新增Mysql用户成功!")
+		fmt.Println("")
 	} else {
 		fmt.Println(err)
 	}
