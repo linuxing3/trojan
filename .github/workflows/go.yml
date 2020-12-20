@@ -31,13 +31,25 @@ jobs:
             dep ensure
         fi
 
-    - name: Build
+    - name: Build xxxray binary file
       run: |
         packr2
         go build -ldflags "-s -w -X 'trojan/xray.MVersion=`git describe --tags $(git rev-list --tags --max-count=1)`' -X 'trojan/xray.BuildDate=`TZ=Asia/Shanghai date "+%Y%m%d-%H%M"`' -X 'trojan/xray.GoVersion=`go version|awk '{print $3,$4}'`' -X 'trojan/xray.GitVersion=`git rev-parse HEAD`'" -o "result/xxxray" .
         touch result/xxxray
         packr2 clean
-        rm -rf result
+
+    - name: Upload result directory
+      uses: actions/upload-artifact@main
+      with:
+        name: xxxray
+        path: result
+
+    - name: Upload to release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: result/xxxray
 
     - name: Test
       run: go test -v ./...

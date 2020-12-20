@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-GPL%20V3-blue.svg?longCache=true)](https://www.gnu.org/licenses/gpl-3.0.en.html)
 
 
-trojan多用户管理部署程序
+xray多用户管理部署程序
 
 ## 功能
 - 在线web页面和命令行两种方式管理xray多用户
