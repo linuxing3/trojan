@@ -118,7 +118,6 @@ func queryUserList(db *sql.DB, sql string) ([]*User, error) {
 			return nil, err
 		}
 		fmt.Printf("用户名:" + username)
-		fmt.Printf("用户名:" + username)
 		fmt.Printf("uuid:" + id)
 		userList = append(userList, &User{
 			ID:         id,

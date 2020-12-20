@@ -16,7 +16,7 @@ var (
 	dockerInstallUrl1 = "https://get.docker.com"
 	dockerInstallUrl2 = "https://git.io/docker-install"
 	TrojanDbDockerRun = "docker run --name trojan-mariadb --restart=always -p %d:3306 -v /home/mariadb/trojan:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_ROOT_HOST=%% -e MYSQL_DATABASE=trojan -d mariadb:10.2"
-	XrayDbDockerRun   = "docker run --name xray-mariadb --restart=always -p %d:3306 -v /home/mariadb/xray:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_ROOT_HOST=%% -e MYSQL_DATABASE=%s -d mariadb:10.2"
+	XrayDbDockerRun   = "docker run --name xray-mariadb --restart=always -p %d:3306 -v /home/xray:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=%s -e MYSQL_ROOT_HOST=%% -e MYSQL_DATABASE=%s -d mariadb:10.2"
 )
 
 // InstallMenu 安装目录
