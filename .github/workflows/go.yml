@@ -31,6 +31,12 @@ jobs:
             dep ensure
         fi
 
+    - name: Install packr2
+      run: |
+        go get -u github.com/gobuffalo/packr/v2/...
+        go get -u github.com/gobuffalo/packr/v2/packr2
+        which packr2
+
     - name: Build xxxray binary file
       run: |
         packr2
