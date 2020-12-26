@@ -25,6 +25,7 @@ jobs:
 
     - name: Get dependencies
       run: |
+        apt install make
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -39,10 +40,7 @@ jobs:
 
     - name: Build xxxray binary file
       run: |
-        packr2
-        go build -ldflags "-s -w -X 'trojan/xray.MVersion=`git describe --tags $(git rev-list --tags --max-count=1)`' -X 'trojan/xray.BuildDate=`TZ=Asia/Shanghai date "+%Y%m%d-%H%M"`' -X 'trojan/xray.GoVersion=`go version|awk '{print $3,$4}'`' -X 'trojan/xray.GitVersion=`git rev-parse HEAD`'" -o "result/xxxray" .
-        touch result/xxxray
-        packr2 clean
+        make build
 
     - name: Upload result directory
       uses: actions/upload-artifact@main
@@ -58,5 +56,4 @@ jobs:
         files: result/xxxray
 
     - name: Test
-      run: go test -v ./...
-    
+      run: make test
