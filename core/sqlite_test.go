@@ -15,12 +15,26 @@ func TestSqlite_GetDB(t *testing.T) {
 		Password string
 		Table    string
 	}
+
+	f := fields{
+		Enabled:  true,
+		Path:     "./xray.db",
+		Password: "",
+		Table:    "",
+	}
+
+	db, _ := sql.Open("sqlite3", f.Path)
 	tests := []struct {
 		name   string
 		fields fields
 		want   *sql.DB
 	}{
 		// TODO: Add test cases.
+		{
+			name:   "Test sqlite db get method",
+			fields: f,
+			want:   db,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -30,107 +44,10 @@ func TestSqlite_GetDB(t *testing.T) {
 				Password: tt.fields.Password,
 				Table:    tt.fields.Table,
 			}
-			if got := sqlite.GetDB(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Sqlite.GetDB() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestSqlite_CreateDefaultTable(t *testing.T) {
-	type fields struct {
-		Enabled  bool
-		Path     string
-		Password string
-		Table    string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sqlite := &Sqlite{
-				Enabled:  tt.fields.Enabled,
-				Path:     tt.fields.Path,
-				Password: tt.fields.Password,
-				Table:    tt.fields.Table,
-			}
-			if got := sqlite.CreateDefaultTable(); got != tt.want {
-				t.Errorf("Sqlite.CreateDefaultTable() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestSqlite_CreateTable(t *testing.T) {
-	type fields struct {
-		Enabled  bool
-		Path     string
-		Password string
-		Table    string
-	}
-	type args struct {
-		dbName string
-		fields []string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sqlite := &Sqlite{
-				Enabled:  tt.fields.Enabled,
-				Path:     tt.fields.Path,
-				Password: tt.fields.Password,
-				Table:    tt.fields.Table,
-			}
-			if got := sqlite.CreateTable(tt.args.dbName, tt.args.fields); got != tt.want {
-				t.Errorf("Sqlite.CreateTable() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestSqlite_CreateUser(t *testing.T) {
-	type fields struct {
-		Enabled  bool
-		Path     string
-		Password string
-		Table    string
-	}
-	type args struct {
-		id         string
-		username   string
-		base64Pass string
-		originPass string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sqlite := &Sqlite{
-				Enabled:  tt.fields.Enabled,
-				Path:     tt.fields.Path,
-				Password: tt.fields.Password,
-				Table:    tt.fields.Table,
-			}
-			if err := sqlite.CreateUser(tt.args.id, tt.args.username, tt.args.base64Pass, tt.args.originPass); (err != nil) != tt.wantErr {
-				t.Errorf("Sqlite.CreateUser() error = %v, wantErr %v", err, tt.wantErr)
+			if got := sqlite.GetDB(); reflect.TypeOf(got) != reflect.TypeOf(tt.want) {
+				t.Errorf("Sqlite.GetDB() = %v, want %v", reflect.TypeOf(got).String(), reflect.TypeOf(got).String())
+			} else {
+				t.Logf("Sqlite.GetDB() = %v, want %v", reflect.TypeOf(got).String(), reflect.TypeOf(got).String())
 			}
 		})
 	}

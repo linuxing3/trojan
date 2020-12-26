@@ -5,5 +5,6 @@ packrd/
 result/
 __debug_bin
 **/*/__debug_bin
+**/*/*-packr.go
 xray.db
 sqlite.json

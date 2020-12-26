@@ -12,6 +12,13 @@ func TestCheckCommandExists(t *testing.T) {
 		want bool
 	}{
 		// TODO: Add test cases.
+		{
+			name: "test if bash exists",
+			args: args{
+				command: "echo",
+			},
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

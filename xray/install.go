@@ -238,18 +238,20 @@ func InstallSqlite() {
 		}
 	}
 	// 执行命令: 创建xray数据库
+	fmt.Println("写入配置文件")
 	core.WriteSqlite(&sqlite)
+
+	fmt.Println("从配置文件读取")
 	db := sqlite.GetDB()
 	defer db.Close()
 	fmt.Println("sqlite启动成功!")
-	// 创建表
+
+	fmt.Println("创建表!")
 	sqlite.CreateDefaultTable()
-	// 添加用户
+
+	fmt.Println("如何没有默认用户，添加一个用户!")
 	if userList, _ := sqlite.GetData(); len(userList) == 0 {
 		AddUser()
 	}
-	// 写入配置文件
-	// core.WriteSqlite(&sqlite)
-	// 重启
 	fmt.Println()
 }
