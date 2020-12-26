@@ -18,7 +18,7 @@ func TestSqlite_GetDB(t *testing.T) {
 
 	f := fields{
 		Enabled:  true,
-		Path:     "./xray.db",
+		Path:     "../xray.db",
 		Password: "",
 		Table:    "",
 	}

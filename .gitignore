@@ -7,4 +7,5 @@ __debug_bin
 **/*/__debug_bin
 **/*/*-packr.go
 xray.db
+**/*/xray.db
 sqlite.json
