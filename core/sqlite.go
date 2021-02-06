@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 	"trojan/util"
+	"trojan/core"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -29,7 +30,7 @@ var defaultPath string = "./xray.db"
 // GetDB 获取sqlite数据库连接
 func (sqlite *Sqlite) GetDB() *sql.DB {
 	// 屏蔽sqlite驱动包的日志输出
-	log.Println("Creating sqlite-database.db...")
+	log.Println("Creating xray.db...")
 	if _, err := os.Lstat(sqlite.Path); err != nil {
 		// os.Remove(sqlite.Path)
 		file, err := os.Create(sqlite.Path) // Create SQLite file
@@ -49,9 +50,9 @@ func (sqlite *Sqlite) GetDB() *sql.DB {
 func (sqlite *Sqlite) CreateDefaultTable() bool {
 	db := sqlite.GetDB()
 	if _, err := db.Exec(`
-	CREATE TABLE IF NOT EXISTS users (
+	CREATE TABLE IF NOT EXISTS members (
 			id CHAR(56) PRIMARY KEY NOT NULL,
-			username CHAR(64) NOT NULL,
+			membername CHAR(64) NOT NULL,
 			password CHAR(56) NOT NULL,
 			passwordShow CHAR(255) NOT NULL,
 			email CHAR(56),
@@ -71,7 +72,7 @@ func (sqlite *Sqlite) CreateDefaultTable() bool {
 // CreateTable create table in db with fields array
 func (sqlite *Sqlite) CreateTable(dbName string, fields []string) bool {
 	db := sqlite.GetDB()
-	var defaultFields = []string{"username", "password", "passwordShow", "email", "level", "quota", "download", "upload", "useDays", "expiryDate"}
+	var defaultFields = []string{"membername", "password", "passwordShow", "email", "level", "quota", "download", "upload", "useDays", "expiryDate"}
 	if len(fields) == 0 {
 		fields = defaultFields
 	}
@@ -84,8 +85,8 @@ func (sqlite *Sqlite) CreateTable(dbName string, fields []string) bool {
 	return true
 }
 
-// CreateUser 创建Xray用户
-func (sqlite *Sqlite) CreateUser(id string, username string, base64Pass string, originPass string) error {
+// CreateMember 创建Xray用户
+func (sqlite *Sqlite) CreateMember(id string, membername string, base64Pass string, originPass string) error {
 
 	db := sqlite.GetDB()
 	if db == nil {
@@ -93,7 +94,7 @@ func (sqlite *Sqlite) CreateUser(id string, username string, base64Pass string, 
 	}
 	defer db.Close()
 	encryPass := sha256.Sum224([]byte(originPass))
-	if _, err := db.Exec(fmt.Sprintf("INSERT INTO users(id, username, password, passwordShow, quota) VALUES ('%s', '%s', '%x', '%s', -1);", id, username, encryPass, base64Pass)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("INSERT INTO members(id, membername, password, passwordShow, quota) VALUES ('%s', '%s', '%x', '%s', -1);", id, membername, encryPass, base64Pass)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -104,34 +105,34 @@ func (sqlite *Sqlite) CreateUser(id string, username string, base64Pass string, 
 	return nil
 }
 
-// UpdateUser 更新Xray用户名和密码
-func (sqlite *Sqlite) UpdateUser(id string, username string, base64Pass string, originPass string) error {
+// UpdateMember 更新Xray用户名和密码
+func (sqlite *Sqlite) UpdateMember(id string, membername string, base64Pass string, originPass string) error {
 	db := sqlite.GetDB()
 	if db == nil {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
 	encryPass := sha256.Sum224([]byte(originPass))
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET username='%s', password='%x', passwordShow='%s' WHERE id='%s';", username, encryPass, base64Pass, id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE members SET membername='%s', password='%x', passwordShow='%s' WHERE id='%s';", membername, encryPass, base64Pass, id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
 	return nil
 }
 
-// DeleteUser 删除用户
-func (sqlite *Sqlite) DeleteUser(id string) error {
+// DeleteMember 删除用户
+func (sqlite *Sqlite) DeleteMember(id string) error {
 	db := sqlite.GetDB()
 	if db == nil {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	if userList, err := sqlite.GetData(id); err != nil {
+	if memberList, err := sqlite.GetData(id); err != nil {
 		return err
-	} else if userList != nil && len(userList) == 0 {
+	} else if memberList != nil && len(memberList) == 0 {
 		return fmt.Errorf("不存在id为%s的用户", id)
 	}
-	if _, err := db.Exec(fmt.Sprintf("DELETE FROM users WHERE id='%s';", id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("DELETE FROM members WHERE id='%s';", id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -149,12 +150,12 @@ func (sqlite *Sqlite) MonthlyResetData() error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	userList, err := queryUserList(db, "SELECT * FROM users WHERE useDays != 0 AND quota != 0")
+	memberList, err := MemberList(db, "SELECT * FROM members WHERE useDays != 0 AND quota != 0")
 	if err != nil {
 		return err
 	}
-	for _, user := range userList {
-		if _, err := db.Exec(fmt.Sprintf("UPDATE users SET download=0, upload=0 WHERE id='%s';", user.ID)); err != nil {
+	for _, member := range memberList {
+		if _, err := db.Exec(fmt.Sprintf("UPDATE members SET download=0, upload=0 WHERE id='%s';", member.ID)); err != nil {
 			return err
 		}
 	}
@@ -176,13 +177,11 @@ func (sqlite *Sqlite) DailyCheckExpire() (bool, error) {
 		return false, errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	userList, err := queryUserList(db, "SELECT * FROM users WHERE useDays != 0 AND quota != 0")
-	if err != nil {
-		return false, err
-	}
-	for _, user := range userList {
-		if user.ExpiryDate == todayDay {
-			if _, err := db.Exec(fmt.Sprintf("UPDATE users SET quota=0 WHERE id='%s';", user.ID)); err != nil {
+	sqlite := core.GetSqlite()
+	memberList := sqlite.GetDataORM()
+	for _, member := range memberList {
+		if member.ExpiryDate == todayDay {
+			if _, err := db.Exec(fmt.Sprintf("UPDATE members SET quota=0 WHERE id='%s';", member.ID)); err != nil {
 				return false, err
 			}
 			if !needRestart {
@@ -251,35 +250,35 @@ func (sqlite *Sqlite) UpgradeDB() error {
 		return errors.New("can't connect sqlite")
 	}
 	var field string
-	error := db.QueryRow("SHOW COLUMNS FROM users LIKE 'passwordShow';").Scan(&field)
+	error := db.QueryRow("SHOW COLUMNS FROM members LIKE 'passwordShow';").Scan(&field)
 	if error == sql.ErrNoRows {
 		fmt.Println(util.Yellow("正在进行数据库升级, 请稍等.."))
-		if _, err := db.Exec("ALTER TABLE users ADD COLUMN passwordShow VARCHAR(255) NOT NULL AFTER password;"); err != nil {
+		if _, err := db.Exec("ALTER TABLE members ADD COLUMN passwordShow VARCHAR(255) NOT NULL AFTER password;"); err != nil {
 			fmt.Println(err)
 			return err
 		}
-		userList, err := sqlite.GetData()
+		memberList, err := sqlite.GetData()
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
-		for _, user := range userList {
-			pass, _ := GetValue(fmt.Sprintf("%s_pass", user.Username))
+		for _, member := range memberList {
+			pass, _ := GetValue(fmt.Sprintf("%s_pass", member.Membername))
 			if pass != "" {
 				base64Pass := base64.StdEncoding.EncodeToString([]byte(pass))
-				if _, err := db.Exec(fmt.Sprintf("UPDATE users SET passwordShow='%s' WHERE id='%s';", base64Pass, user.ID)); err != nil {
+				if _, err := db.Exec(fmt.Sprintf("UPDATE members SET passwordShow='%s' WHERE id='%s';", base64Pass, member.ID)); err != nil {
 					fmt.Println(err)
 					return err
 				}
-				DelValue(fmt.Sprintf("%s_pass", user.Username))
+				DelValue(fmt.Sprintf("%s_pass", member.Membername))
 			}
 		}
 	}
-	error = db.QueryRow("SHOW COLUMNS FROM users LIKE 'useDays';").Scan(&field)
+	error = db.QueryRow("SHOW COLUMNS FROM members LIKE 'useDays';").Scan(&field)
 	if error == sql.ErrNoRows {
 		fmt.Println(util.Yellow("正在进行数据库升级, 请稍等.."))
 		if _, err := db.Exec(`
-ALTER TABLE users
+ALTER TABLE members
 ADD COLUMN useDays int(10) DEFAULT 0,
 ADD COLUMN expiryDate char(10) DEFAULT '';
 `); err != nil {
@@ -305,16 +304,16 @@ func (sqlite *Sqlite) CleanData(id string) error {
 }
 
 // CleanDataByName 清空指定用户名流量统计数据
-func (sqlite *Sqlite) CleanDataByName(usernames []string) error {
+func (sqlite *Sqlite) CleanDataByName(membernames []string) error {
 	db := sqlite.GetDB()
 	if db == nil {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	runSql := "UPDATE members SET download=0, upload=0 WHERE username in ("
-	for i, name := range usernames {
+	runSql := "UPDATE members SET download=0, upload=0 WHERE membername in ("
+	for i, name := range membernames {
 		runSql = runSql + "'" + name + "'"
-		if i == len(usernames)-1 {
+		if i == len(membernames)-1 {
 			runSql = runSql + ")"
 		} else {
 			runSql = runSql + ","
@@ -327,32 +326,32 @@ func (sqlite *Sqlite) CleanDataByName(usernames []string) error {
 	return nil
 }
 
-// GetUserByName 通过用户名来获取用户
-func (sqlite *Sqlite) GetUserByName(name string) *User {
+// GetMemberByName 通过用户名来获取用户
+func (sqlite *Sqlite) GetMemberByName(name string) *Member {
 	db := sqlite.GetDB()
 	if db == nil {
 		return nil
 	}
 	defer db.Close()
-	user, err := queryUser(db, fmt.Sprintf("SELECT * FROM users WHERE username='%s'", name))
+	member, err := queryMember(db, fmt.Sprintf("SELECT * FROM members WHERE membername='%s'", name))
 	if err != nil {
 		return nil
 	}
-	return user
+	return member
 }
 
-// GetUserByPass 通过密码来获取用户
-func (sqlite *Sqlite) GetUserByPass(pass string) *User {
+// GetMemberByPass 通过密码来获取用户
+func (sqlite *Sqlite) GetMemberByPass(pass string) *Member {
 	db := sqlite.GetDB()
 	if db == nil {
 		return nil
 	}
 	defer db.Close()
-	user, err := queryUser(db, fmt.Sprintf("SELECT * FROM users WHERE passwordShow='%s'", pass))
+	member, err := queryMember(db, fmt.Sprintf("SELECT * FROM members WHERE passwordShow='%s'", pass))
 	if err != nil {
 		return nil
 	}
-	return user
+	return member
 }
 
 // PageList 通过分页获取用户记录
@@ -367,42 +366,29 @@ func (sqlite *Sqlite) PageList(curPage int, pageSize int) (*PageQuery, error) {
 	}
 	defer db.Close()
 	offset := (curPage - 1) * pageSize
-	querySQL := fmt.Sprintf("SELECT * FROM users LIMIT %d, %d", offset, pageSize)
-	userList, err := queryUserList(db, querySQL)
+	querySQL := fmt.Sprintf("SELECT * FROM members LIMIT %d, %d", offset, pageSize)
+	memberList, err := queryMemberList(db, querySQL)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-	db.QueryRow("SELECT COUNT(id) FROM users").Scan(&total)
+	db.QueryRow("SELECT COUNT(id) FROM members").Scan(&total)
 	return &PageQuery{
 		CurPage:  curPage,
 		PageSize: pageSize,
 		Total:    total,
-		DataList: userList,
+		DataList: memberList,
 		PageNum:  (total + pageSize - 1) / pageSize,
 	}, nil
 }
 
 
 // GetData 获取用户记录
-func (sqlite *Sqlite) GetData(ids ...string) ([]*User, error) {
-	querySQL := "SELECT * FROM users"
-	db := sqlite.GetDB()
-	if db == nil {
-		return nil, errors.New("连接sqlite失败")
-	}
-	defer db.Close()
-	if len(ids) > 0 {
-		querySQL = querySQL + " WHERE id in ('" + strings.Join(ids, "','") + "')"
-	}
+func (sqlite *Sqlite) GetData(ids ...string) ([]*Member, error) {
 	fmt.Printf("[querySQL]: Get Data")
-	fmt.Printf(querySQL)
-	userList, err := queryUserList(db, querySQL)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return userList, nil
+	sqlite := core.GetSqlite()
+	memberList := sqlite.GetDataORM(ids)
+	return memberList, nil
 }
 
 // =================================================
