@@ -200,7 +200,7 @@ func (sqlite *Sqlite) CancelExpire(id string) error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET useDays=0, expiryDate='' WHERE id='%s';", id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE members SET useDays=0, expiryDate='' WHERE id='%s';", id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -223,7 +223,7 @@ func (sqlite *Sqlite) SetExpire(id string, useDays uint) error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET useDays=%d, expiryDate='%s' WHERE id='%s';", useDays, expiryDate, id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE members SET useDays=%d, expiryDate='%s' WHERE id='%s';", useDays, expiryDate, id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -237,7 +237,7 @@ func (sqlite *Sqlite) SetQuota(id string, quota int) error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET quota=%d WHERE id='%s';", quota, id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE members SET quota=%d WHERE id='%s';", quota, id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -297,7 +297,7 @@ func (sqlite *Sqlite) CleanData(id string) error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	if _, err := db.Exec(fmt.Sprintf("UPDATE users SET download=0, upload=0 WHERE id='%s';", id)); err != nil {
+	if _, err := db.Exec(fmt.Sprintf("UPDATE members SET download=0, upload=0 WHERE id='%s';", id)); err != nil {
 		fmt.Println(err)
 		return err
 	}
@@ -311,7 +311,7 @@ func (sqlite *Sqlite) CleanDataByName(usernames []string) error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	runSql := "UPDATE users SET download=0, upload=0 WHERE username in ("
+	runSql := "UPDATE members SET download=0, upload=0 WHERE username in ("
 	for i, name := range usernames {
 		runSql = runSql + "'" + name + "'"
 		if i == len(usernames)-1 {
@@ -382,6 +382,7 @@ func (sqlite *Sqlite) PageList(curPage int, pageSize int) (*PageQuery, error) {
 		PageNum:  (total + pageSize - 1) / pageSize,
 	}, nil
 }
+
 
 // GetData 获取用户记录
 func (sqlite *Sqlite) GetData(ids ...string) ([]*User, error) {

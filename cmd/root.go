@@ -38,7 +38,7 @@ func check() {
 }
 
 func mainMenu() {
-	check()
+	// check()
 exit:
 	for {
 		fmt.Println()
@@ -49,13 +49,13 @@ exit:
 		case 1:
 			xray.ControllMenu()
 		case 2:
-			xray.UserMenu()
+			xray.MemberMenu()
 		case 3:
 			xray.InstallMenu()
 		case 4:
 			xray.WebMenu()
 		case 5:
-			xray.UserList()
+			xray.MemberList()
 		case 6:
 			xray.GenClientJson()
 		default:

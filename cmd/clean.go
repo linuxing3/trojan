@@ -15,7 +15,8 @@ trojan clean zhangsan lisi
 `,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		xray.CleanDataByName(args)
+		xray.CleanDataByUserName(args)
+		xray.CleanDataByMemberName(args)
 	},
 }
 

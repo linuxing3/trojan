@@ -50,16 +50,6 @@ func AddUser() {
 	inputPass := util.Input(fmt.Sprintf("生成随机密码: %s, 使用直接回车, 否则输入自定义密码: ", randomPass), randomPass)
 	base64Pass := base64.StdEncoding.EncodeToString([]byte(inputPass))
 
-	// 3. Optional 创建Sqlite新用户
-	// FIXED 这里的配置是用硬盘配置文件中读取的，所以记得先写入配置文件才能正常使用
-	sqlite := core.GetSqlite()
-	if err := sqlite.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
-		fmt.Println("新增Sqlite用户成功!")
-		fmt.Println("")
-	} else {
-		fmt.Println(err)
-	}
-
 	// 4. 获取数据库配置
 	mysql := core.GetMysql()
 	if user := mysql.GetUserByName(inputUser); user != nil {
@@ -145,10 +135,6 @@ func CleanData() {
 	if mysql.CleanData(userList[choice-1].ID) == nil {
 		fmt.Println("清空mysql流量成功!")
 	}
-	sqlite := core.GetSqlite()
-	if sqlite.CleanData(userList[choice-1].ID) == nil {
-		fmt.Println("清空sqlite流量成功!")
-	}
 }
 
 // CancelExpire 取消限期
@@ -165,10 +151,6 @@ func CancelExpire() {
 	}
 	if mysql.CancelExpire(userList[choice-1].ID) == nil {
 		fmt.Println("取消mysql限期成功!")
-	}
-	sqlite := core.GetSqlite()
-	if sqlite.CancelExpire(userList[choice-1].ID) == nil {
-		fmt.Println("取消sqlite限期成功!")
 	}
 }
 
@@ -197,24 +179,6 @@ func SetupExpire() {
 	sqlite := core.GetSqlite()
 	if sqlite.SetExpire(userList[choice-1].ID, uint(useDays)) == nil {
 		fmt.Println("设置sqlite限期成功!")
-	}
-
-}
-
-// CleanDataByName 清空指定用户流量
-func CleanDataByName(usernames []string) {
-	mysql := core.GetMysql()
-	if err := mysql.CleanDataByName(usernames); err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("清空mysql流量成功!")
-	}
-
-	sqlite := core.GetSqlite()
-	if err := sqlite.CleanDataByName(usernames); err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println("清空sqlite流量成功!")
 	}
 
 }
@@ -265,4 +229,14 @@ func UserList(ids ...string) []*core.User {
 		fmt.Println()
 	}
 	return userList
+}
+
+// CleanDataByName 清空指定用户流量
+func CleanDataByUserName(usernames []string) {
+	mysql := core.GetMysql()
+	if err := mysql.CleanDataByName(usernames); err != nil {
+		fmt.Println(err.Error())
+	} else {
+		fmt.Println("清空mysql流量成功!")
+	}
 }
