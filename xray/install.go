@@ -51,6 +51,11 @@ func InstallDocker() {
 	}
 }
 
+// InstallSqliteBin 安装sqlite3的可执行文件
+func InstallSqliteBin() {
+	util.ExecCommand("apt install -y sqlite3")
+}
+
 // InstallXray 安装xray
 func InstallXray() {
 	fmt.Println()

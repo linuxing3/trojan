@@ -59,6 +59,52 @@ func userRouter(router *gin.Engine) {
 	}
 }
 
+func memberRouter(router *gin.Engine) {
+	user := router.Group("/xray/member")
+	{
+		user.GET("", func(c *gin.Context) {
+			requestUser := RequestUsername(c)
+			if requestUser == "admin" {
+				c.JSON(200, controller.MemberList(""))
+			} else {
+				c.JSON(200, controller.MemberList(requestUser))
+			}
+		})
+		user.GET("/page", func(c *gin.Context) {
+			curPageStr := c.DefaultQuery("curPage", "1")
+			pageSizeStr := c.DefaultQuery("pageSize", "10")
+			curPage, _ := strconv.Atoi(curPageStr)
+			pageSize, _ := strconv.Atoi(pageSizeStr)
+			c.JSON(200, controller.PageMemberList(curPage, pageSize))
+		})
+		user.POST("", func(c *gin.Context) {
+			username := c.PostForm("username")
+			password := c.PostForm("password")
+			c.JSON(200, controller.CreateMember(username, password))
+		})
+		user.POST("/update", func(c *gin.Context) {
+			sid := c.PostForm("id")
+			username := c.PostForm("username")
+			password := c.PostForm("password")
+			c.JSON(200, controller.UpdateMember(sid, username, password))
+		})
+		user.POST("/expire", func(c *gin.Context) {
+			sid := c.PostForm("id")
+			sDays := c.PostForm("useDays")
+			useDays, _ := strconv.Atoi(sDays)
+			c.JSON(200, controller.SetMemberExpire(sid, uint(useDays)))
+		})
+		user.DELETE("/expire", func(c *gin.Context) {
+			sid := c.Query("id")
+			c.JSON(200, controller.CancelMemberExpire(sid))
+		})
+		user.DELETE("", func(c *gin.Context) {
+			sid := c.Query("id")
+			c.JSON(200, controller.DelMember(sid))
+		})
+	}
+}
+
 func xrayRouter(router *gin.Engine) {
 	router.POST("/xray/start", func(c *gin.Context) {
 		c.JSON(200, controller.Start())
@@ -146,15 +192,22 @@ func staticRouter(router *gin.Engine) {
 func Start(host string, port int, isSSL bool) {
 	router := gin.Default()
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
+	// 静态路由
 	staticRouter(router)
+	// 中间件
 	router.Use(Auth(router).MiddlewareFunc())
+	// 动态路由
 	xrayRouter(router)
 	userRouter(router)
+	memberRouter(router)
 	dataRouter(router)
 	commonRouter(router)
+	// 定时任务
 	controller.SheduleTask()
 	controller.CollectTask()
+	// 打开端口
 	util.OpenPort(port)
+	// 启动服务器
 	if isSSL {
 		config := core.Load("")
 		ssl := &config.Inbounds[0].StreamSettings.XtlsSettings.Certificates[0]

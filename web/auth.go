@@ -58,8 +58,10 @@ func init() {
 				return nil, err
 			}
 			if userID != "admin" {
-				mysql := core.GetMysql()
-				user := mysql.GetUserByName(userID)
+				sqlite := core.GetSqlite()
+				user := sqlite.GetMemberByName(userID)
+				// mysql := core.GetMysql()
+				// user := mysql.GetUserByName(userID)
 				if user == nil {
 					return nil, jwt.ErrFailedAuthentication
 				}
@@ -101,6 +103,7 @@ func updateUser(c *gin.Context) {
 	defer controller.TimeCost(time.Now(), &responseBody)
 	username := c.DefaultPostForm("username", "admin")
 	pass := c.PostForm("password")
+	// set value in leveldb for sessions
 	err := core.SetValue(fmt.Sprintf("%s_pass", username), pass)
 	if err != nil {
 		responseBody.Msg = err.Error()

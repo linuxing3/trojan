@@ -11,7 +11,7 @@ var infoCmd = &cobra.Command{
 	Use:   "info",
 	Short: "用户信息列表",
 	Run: func(cmd *cobra.Command, args []string) {
-		xray.UserList()
+		xray.MemberList()
 	},
 }
 

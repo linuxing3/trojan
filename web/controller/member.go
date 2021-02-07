@@ -16,15 +16,15 @@ func MemberList(findMember string) *ResponseBody {
 	if findMember != "" {
 		for _, member := range memberList {
 			if member.Membername == findMember {
-				memberList = []core.Member{member}
+				memberList = []*core.Member{member}
 				break
 			}
 		}
 	}
 	domain, port := xray.GetDomainAndPort()
 	responseBody.Data = map[string]interface{}{
-		"domain":   domain,
-		"port":     port,
+		"domain":     domain,
+		"port":       port,
 		"memberList": memberList,
 	}
 	return &responseBody
@@ -59,7 +59,7 @@ func CreateMember(membername string, password string) *ResponseBody {
 	}
 	sqlite := core.GetSqlite()
 	if member := sqlite.GetMemberByName(membername); member != nil {
-		responseBody.Msg = "已存在用户。[用户名]:" + membername + "。[uuid]:" + uuid
+		responseBody.Msg = "已存在用户。[用户名]:" + membername
 		return &responseBody
 	}
 	pass, err := base64.StdEncoding.DecodeString(password)
@@ -88,7 +88,8 @@ func UpdateMember(id string, membername string, password string) *ResponseBody {
 	sqlite := core.GetSqlite()
 	memberList, nil := sqlite.GetDataORM(id)
 	if memberList[0].Membername != membername {
-		if member := sqlite.GetMemberByName(membername); member != nil {
+		member := sqlite.GetMemberByName(membername)
+		if member.Membername != "" {
 			responseBody.Msg = "已存在用户名为: " + membername + " 的用户!"
 			return &responseBody
 		}
@@ -99,7 +100,8 @@ func UpdateMember(id string, membername string, password string) *ResponseBody {
 		return &responseBody
 	}
 	if memberList[0].Password != password {
-		if member := sqlite.GetMemberByPass(password); member != nil {
+		member := sqlite.GetMemberByPass(password)
+		if member.Password != "" {
 			responseBody.Msg = "已存在密码为: " + string(pass) + " 的用户!"
 			return &responseBody
 		}
@@ -120,7 +122,7 @@ func DelMember(id string) *ResponseBody {
 	return &responseBody
 }
 
-// SetExpire 设置用户过期
+// SetMemberExpire 设置用户过期
 func SetMemberExpire(id string, useDays uint) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
@@ -131,7 +133,7 @@ func SetMemberExpire(id string, useDays uint) *ResponseBody {
 	return &responseBody
 }
 
-// CancelExpire 取消设置用户过期
+// CancelMemberExpire 取消设置用户过期
 func CancelMemberExpire(id string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)

@@ -27,18 +27,19 @@ func Execute() {
 }
 
 func check() {
-	if !util.IsExists("/usr/local/etc/xray/config.json") {
-		fmt.Println("本机未安装xray, 正在自动安装...")
-		xray.InstallXray()
-		// core.WriteInbloudClient(nil, "create")
-		xray.InstallTls()
-		xray.InstallMysql(xray.XrayDbDockerRun, "xray")
-		util.ExecCommand("systemctl restart xray-web")
-	}
+	// if !util.IsExists("/usr/local/etc/xray/config.json") {
+	// 	fmt.Println("本机未安装xray, 正在自动安装...")
+	// 	xray.InstallXray()
+	// 	// core.WriteInbloudClient(nil, "create")
+	// 	xray.InstallTls()
+	// 	xray.InstallMysql(xray.XrayDbDockerRun, "xray")
+	// 	util.ExecCommand("systemctl restart xray-web")
+	// }
+	util.InstallPack("sqlite3")
 }
 
 func mainMenu() {
-	// check()
+	check()
 exit:
 	for {
 		fmt.Println()
