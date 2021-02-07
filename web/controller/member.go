@@ -2,12 +2,9 @@ package controller
 
 import (
 	"encoding/base64"
-	"fmt"
 	"time"
 	"trojan/core"
 	"trojan/xray"
-
-	"github.com/google/uuid"
 )
 
 // MemberList 获取用户列表
@@ -15,7 +12,7 @@ func MemberList(findMember string) *ResponseBody {
 	responseBody := ResponseBody{Msg: "success"}
 	defer TimeCost(time.Now(), &responseBody)
 	sqlite := core.GetSqlite()
-	memberList := sqlite.GetDataORM()
+	memberList, _ := sqlite.GetDataORM()
 	if findMember != "" {
 		for _, member := range memberList {
 			if member.Membername == findMember {
@@ -89,7 +86,7 @@ func UpdateMember(id string, membername string, password string) *ResponseBody {
 		return &responseBody
 	}
 	sqlite := core.GetSqlite()
-	memberList := sqlite.GetDataORM(id)
+	memberList, nil := sqlite.GetDataORM(id)
 	if memberList[0].Membername != membername {
 		if member := sqlite.GetMemberByName(membername); member != nil {
 			responseBody.Msg = "已存在用户名为: " + membername + " 的用户!"

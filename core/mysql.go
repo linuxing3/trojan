@@ -45,8 +45,8 @@ type User struct {
 	ExpiryDate string
 }
 
-// PageQuery 分页查询的结构体
-type PageQuery struct {
+// PageQueryUser 分页查询的结构体
+type PageQueryUser struct {
 	PageNum  int
 	CurPage  int
 	Total    int
@@ -428,7 +428,7 @@ func (mysql *Mysql) GetUserByPass(pass string) *User {
 }
 
 // PageList 通过分页获取用户记录
-func (mysql *Mysql) PageList(curPage int, pageSize int) (*PageQuery, error) {
+func (mysql *Mysql) PageList(curPage int, pageSize int) (*PageQueryUser, error) {
 	var (
 		total int
 	)
@@ -446,7 +446,7 @@ func (mysql *Mysql) PageList(curPage int, pageSize int) (*PageQuery, error) {
 		return nil, err
 	}
 	db.QueryRow("SELECT COUNT(id) FROM users").Scan(&total)
-	return &PageQuery{
+	return &PageQueryUser{
 		CurPage:  curPage,
 		PageSize: pageSize,
 		Total:    total,

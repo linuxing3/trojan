@@ -191,13 +191,7 @@ func UserList(ids ...string) []*core.User {
 	)
 	// mysql 作为主数据库
 	mysql := core.GetMysql()
-	if mysql == nil {
-		// sqlite 作为备用
-		sqlite := core.GetSqlite()
-		userList, err = sqlite.GetData(ids...)
-	} else {
-		userList, err = mysql.GetData(ids...)
-	}
+	userList, err = mysql.GetData(ids...)
 
 	if err != nil {
 		fmt.Println(err.Error())

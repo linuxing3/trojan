@@ -23,6 +23,14 @@ type Sqlite struct {
 	Password string `json:"password"`
 	Table    string `json:"table"`
 }
+// PageQueryMember 分页查询的结构体
+type PageQueryMember struct {
+	PageNum  int
+	CurPage  int
+	Total    int
+	PageSize int
+	DataList []*Member
+}
 
 var defaultPath string = "./xray.db"
 
@@ -417,7 +425,7 @@ func (sqlite *Sqlite) GetMemberByPass(pass string) *Member {
 }
 
 // PageList 通过分页获取用户记录
-func (sqlite *Sqlite) PageList(curPage int, pageSize int) (*PageQuery, error) {
+func (sqlite *Sqlite) PageList(curPage int, pageSize int) (*PageQueryMember, error) {
 	var (
 		total int
 	)
@@ -435,7 +443,7 @@ func (sqlite *Sqlite) PageList(curPage int, pageSize int) (*PageQuery, error) {
 		return nil, err
 	}
 	db.QueryRow("SELECT COUNT(id) FROM members").Scan(&total)
-	return &PageQuery{
+	return &PageQueryMember{
 		CurPage:  curPage,
 		PageSize: pageSize,
 		Total:    total,
