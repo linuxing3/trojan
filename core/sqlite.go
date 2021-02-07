@@ -71,7 +71,7 @@ func (sqlite *Sqlite) CreateDefaultTable() bool {
 // 查询全部的用户列表，用于GetData，可以同时用于mysql和sqlite
 func queryMemberList(db *sql.DB, sql string) ([]*Member, error) {
 	var (
-		id         unit
+		id         uint
 		membername   string
 		originPass string
 		level      string

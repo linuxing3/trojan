@@ -88,7 +88,7 @@ func DelUser() {
 
 	// Sqlite用户
 	sqlite := core.GetSqlite()
-	if sqlite.DeleteUser(userList[choice-1].ID) == nil {
+	if sqlite.DeleteMember(userList[choice-1].ID) == nil {
 		fmt.Println("删除sqlite用户成功!")
 	}
 }

@@ -35,56 +35,68 @@ func ORMOpen(path string) *gorm.DB {
 	return db
 }
 
+// CreateMemberORM 使用给定信息创建成员
 func (s *Sqlite) CreateMemberORM(id string, membername string, base64Pass string, originPass string) error {
 
 	db := ORMOpen(s.Path)
 
 	encryPass := sha256.Sum224([]byte(originPass))
-	db.Create(&Member{Membername: membername, Password: fmt.Sprintf("%x", encryPass), PasswordShow: base64Pass})
+	if err := db.Create(&Member{Membername: membername, Password: fmt.Sprintf("%x", encryPass), PasswordShow: base64Pass}).Error; err != nil {
+		return err
+	}
 
 	return nil
 }
 
-// UpdateMemberORM 更新Xray用户名和密码
+// UpdateMemberORM 使用给定信息更新用户名和密码
 func (s *Sqlite) UpdateMemberORM(id string, membername string, base64Pass string, originPass string) error {
 	var member Member
 	db := ORMOpen(s.Path)
 
 	encryPass := sha256.Sum224([]byte(originPass))
-	db.Where(&Member{Membername: membername}).First(&member)
-	db.Model(&member).Updates(&Member{Password: fmt.Sprintf("%x", encryPass), PasswordShow: base64Pass})
+	if err := db.Where(&Member{Membername: membername}).First(&member).Error; err != nil {
+		return err
+	}
+	if err := db.Model(&member).Updates(&Member{Password: fmt.Sprintf("%x", encryPass), PasswordShow: base64Pass}).Error; err != nil {
+		return err
+	}
 	return nil
 
 }
 
-// DeleteMemberORM 删除用户
+// DeleteMemberORM 使用给定信息删除用户
 func (s *Sqlite) DeleteMemberORM(id string) error {
 	var member Member
 	db := ORMOpen(s.Path)
 	fmt.Println("Deleteing record:")
 	fmt.Println(id)
 	idInt, _ := strconv.Atoi(id)
-	db.Delete(&member, idInt)
+	if err := db.Delete(&member, idInt).Error; err != nil {
+		return err
+	}
 	return nil
 }
 
-// ReadOneMemberORM 读取部分数据
-func (s *Sqlite) QueryMemberORM(id string) *Member {
+// QueryMemberORM 用id查询数据
+func (s *Sqlite) QueryMemberORM(id string) (*Member, error) {
 	var member Member
 	db := ORMOpen(s.Path)
 	idInt, _ := strconv.Atoi(id)
-	db.Find(&member, idInt)
-	return &member
+	if err := db.Find(&member, idInt).Error; err != nil {
+		return nil, err
+	}
+	return &member, nil
 }
 
-// GetData 获取用户记录
-func (s *Sqlite) GetDataORM(ids ...string) []*Member {
+// GetDataORM 根据指定多个id获取用户记录
+func (s *Sqlite) GetDataORM(ids ...string) ([]*Member, error) {
 	var member []Member
 	var memberList []*Member
 	db := ORMOpen(s.Path)
 
 	fmt.Println("Got records:")
 	fmt.Println(len(ids))
+
 	if len(ids) > 0 {
 		fmt.Println("Find some records:")
 		var idsInt []int
@@ -92,16 +104,19 @@ func (s *Sqlite) GetDataORM(ids ...string) []*Member {
 			idInt, _ := strconv.Atoi(e)
 			idsInt[i] = idInt
 		}
-		db.Find(&member, idsInt)
-		fmt.Println(member)
-		return member
+		if err := db.Find(&member, idsInt).Error; err != nil {
+			return nil, err
+		}
 	} else {
 		fmt.Println("Find all records:")
-		db.Where("id > ?", 0).Find(&member)
-		for _, e := range member {
-			memberList = append(memberList, &e)
+		if err := db.Where("id > ?", 0).Find(&member).Error; err != nil {
+			return nil, err
 		}
-		fmt.Println(member)
-		return memberList
 	}
+	// 更改为指针数组
+	for _, e := range member {
+		memberList = append(memberList, &e)
+	}
+	fmt.Println(member)
+	return memberList, nil
 }

@@ -33,9 +33,8 @@ func MemberMenu() {
 	}
 }
 
-// AddMember
+// AddMember 直接后台添加成员
 func AddMember() {
-
 	// randomUser name and pass
 	randomUser := util.RandString(4)
 	randomPass := util.RandString(8)
@@ -55,16 +54,15 @@ func AddMember() {
 	// 创建Sqlite新用户
 	// FIXED 这里的配置是用硬盘配置文件中读取的，所以记得先写入配置文件才能正常使用
 	sqlite := core.GetSqlite()
-	sqlite.CreateMemberORM(uuid, inputUser, base64Pass, inputPass)
-	// if err := sqlite.CreateUser(uuid, inputUser, base64Pass, inputPass); err == nil {
-	// 	fmt.Println("新增Sqlite用户成功!")
-	// 	fmt.Println("")
-	// } else {
-	// 	fmt.Println(err)
-	// }
+	if err := sqlite.CreateMemberORM(uuid, inputUser, base64Pass, inputPass); err != nil {
+		fmt.Println("新增Sqlite用户成功!")
+		fmt.Println("")
+	} else {
+		fmt.Println(err)
+	}
 }
 
-// DelMember
+// DelMember 后台删除成员
 func DelMember() {
 	memberList := MemberList()
 	fmt.Println("Record list:")
@@ -74,7 +72,12 @@ func DelMember() {
 		return
 	}
 	sqlite := core.GetSqlite()
-	sqlite.DeleteMemberORM(fmt.Sprint(memberList[choice-1].ID))
+	if err := sqlite.DeleteMemberORM(fmt.Sprint(memberList[choice-1].ID)); err != nil {
+		fmt.Println("删除Sqlite用户成功!")
+		fmt.Println("")
+	} else {
+		fmt.Println(err)
+	}
 }
 
 // SetMemberQuota 限制用户流量
@@ -119,7 +122,7 @@ func CleanMemberData() {
 	}
 }
 
-// CancelExpire 取消限期
+// CancelMemberExpire 取消限期
 func CancelMemberExpire() {
 	memberList := MemberList()
 	choice := util.LoopInput("请选择要取消限期的用户序号: ", memberList, true)
@@ -163,7 +166,7 @@ func SetupMemberExpire() {
 
 }
 
-// CleanDataByName 清空指定用户流量
+// CleanDataByMemberName 清空指定用户流量
 func CleanDataByMemberName(usernames []string) {
 
 	sqlite := core.GetSqlite()
@@ -175,9 +178,14 @@ func CleanDataByMemberName(usernames []string) {
 
 }
 
-func MemberList(ids ...string) []core.Member {
+// MemberList 返回并打印选定的成员指针数组
+func MemberList(ids ...string) []*core.Member {
 	sqlite := core.GetSqlite()
-	memberList := sqlite.GetDataORM(ids...)
+	memberList, err := sqlite.GetDataORM(ids...)
+	if err != nil {
+		fmt.Print(err)
+		return nil
+	}
 	fmt.Println(memberList)
 	for i, k := range memberList {
 		pass, err := base64.StdEncoding.DecodeString(k.Password)
