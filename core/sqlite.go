@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 	"trojan/util"
-	"trojan/core"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -69,6 +68,69 @@ func (sqlite *Sqlite) CreateDefaultTable() bool {
 	return true
 }
 
+// 查询全部的用户列表，用于GetData，可以同时用于mysql和sqlite
+func queryMemberList(db *sql.DB, sql string) ([]*Member, error) {
+	var (
+		id         unit
+		membername   string
+		originPass string
+		level      string
+		email      string
+		passShow   string
+		download   uint64
+		upload     uint64
+		quota      int64
+		useDays    uint
+		expiryDate string
+	)
+	var memberList []*Member
+	rows, err := db.Query(sql)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.Scan(&id, &membername, &originPass, &level, &email, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
+			return nil, err
+		}
+		fmt.Printf("用户名:" + membername)
+		memberList = append(memberList, &Member{
+			ID:         id,
+			Membername:   membername,
+			Password:   passShow,
+			Level:      level,
+			Email:      email,
+			Download:   download,
+			Upload:     upload,
+			Quota:      quota,
+			UseDays:    useDays,
+			ExpiryDate: expiryDate,
+		})
+	}
+	return memberList, nil
+}
+// 查询用户，用于GetData
+func queryMember(db *sql.DB, sql string) (*Member, error) {
+	var (
+		id         uint
+		membername   string
+		originPass string
+		passShow   string
+		level      string
+		email      string
+		download   uint64
+		upload     uint64
+		quota      int64
+		useDays    uint
+		expiryDate string
+	)
+	row := db.QueryRow(sql)
+	if err := row.Scan(&id, &membername, &originPass, &level, &email, &passShow, &quota, &download, &upload, &useDays, &expiryDate); err != nil {
+		return nil, err
+	}
+	return &Member{ID: id, Membername: membername, Password: originPass, Download: download, Upload: upload, Quota: quota, UseDays: useDays, ExpiryDate: expiryDate}, nil
+}
+
 // CreateTable create table in db with fields array
 func (sqlite *Sqlite) CreateTable(dbName string, fields []string) bool {
 	db := sqlite.GetDB()
@@ -98,10 +160,8 @@ func (sqlite *Sqlite) CreateMember(id string, membername string, base64Pass stri
 		fmt.Println(err)
 		return err
 	}
-	// // FIXME if ok write to configuration file
-	// if success := WriteInbloudClient([]string{id}, "create"); success == true {
-	// 	fmt.Println("成功在配置文件中假如客户端信息，请重启xray服务器")
-	// }
+	// TODO
+	// return sqlite.CreateMemberORM(id, membername, base64Pass, originPass)
 	return nil
 }
 
@@ -117,6 +177,8 @@ func (sqlite *Sqlite) UpdateMember(id string, membername string, base64Pass stri
 		fmt.Println(err)
 		return err
 	}
+	// TODO
+	// return sqlite.UpdateMemberORM(id, membername, base64Pass, originPass)
 	return nil
 }
 
@@ -136,10 +198,8 @@ func (sqlite *Sqlite) DeleteMember(id string) error {
 		fmt.Println(err)
 		return err
 	}
-	// FIXME if ok write to configuration file
-	// if success := WriteInbloudClient([]string{id}, "delete"); success == true {
-	// 	fmt.Println("成功删除配置文件中客户端信息，请重启xray服务器")
-	// }
+	// TODO
+	// return sqlite.DeleteMemberORM(id)
 	return nil
 }
 
@@ -150,7 +210,7 @@ func (sqlite *Sqlite) MonthlyResetData() error {
 		return errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	memberList, err := MemberList(db, "SELECT * FROM members WHERE useDays != 0 AND quota != 0")
+	memberList, err := queryMemberList(db, "SELECT * FROM members WHERE useDays != 0 AND quota != 0")
 	if err != nil {
 		return err
 	}
@@ -177,8 +237,10 @@ func (sqlite *Sqlite) DailyCheckExpire() (bool, error) {
 		return false, errors.New("can't connect sqlite")
 	}
 	defer db.Close()
-	sqlite := core.GetSqlite()
-	memberList := sqlite.GetDataORM()
+	memberList, err := queryMemberList(db, "SELECT * FROM users WHERE useDays != 0 AND quota != 0")
+	if err != nil {
+		return false, err
+	}
 	for _, member := range memberList {
 		if member.ExpiryDate == todayDay {
 			if _, err := db.Exec(fmt.Sprintf("UPDATE members SET quota=0 WHERE id='%s';", member.ID)); err != nil {
@@ -385,9 +447,22 @@ func (sqlite *Sqlite) PageList(curPage int, pageSize int) (*PageQuery, error) {
 
 // GetData 获取用户记录
 func (sqlite *Sqlite) GetData(ids ...string) ([]*Member, error) {
+	querySQL := "SELECT * FROM members"
+	db := sqlite.GetDB()
+	if db == nil {
+		return nil, errors.New("连接sqlite失败")
+	}
+	defer db.Close()
+	if len(ids) > 0 {
+		querySQL = querySQL + " WHERE id in ('" + strings.Join(ids, "','") + "')"
+	}
 	fmt.Printf("[querySQL]: Get Data")
-	sqlite := core.GetSqlite()
-	memberList := sqlite.GetDataORM(ids)
+	fmt.Printf(querySQL)
+	memberList, err := queryMemberList(db, querySQL)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
 	return memberList, nil
 }
 
